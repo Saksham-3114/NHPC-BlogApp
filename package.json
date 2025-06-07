@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@prisma/client": "^6.8.2",
+    "@tabler/icons-react": "^3.34.0",
     "tsc": "^2.0.4"
   },
   "name": "nhpc-blog",
