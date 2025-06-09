@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String    @unique
+  role      Role      @default(user)
+  bio       String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  comments  Comment[]
+  likes     Like[]
+  post      Post[]
+
+  @@map("users")
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  title     String
+  content   String
+  published Boolean   @default(false)
+  Category  String[]
+  authorId  String
+  createdAt DateTime  @default(now()) @map("created_at")
+  comments  Comment[]
+  likes     Like[]
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  postId    String
+  authorId  String
+  createdAt DateTime @default(now()) @map("created_at")
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  liked     Boolean  @default(false)
+  postId    String
+  authorId  String
+  createdAt DateTime @default(now()) @map("created_at")
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("likes")
+}
+
+enum Role {
+  user
+  admin
+}
