@@ -11,6 +11,8 @@ import {
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+
 
 export function NavbarDemo() {
   const navItems = [
@@ -32,6 +34,7 @@ export function NavbarDemo() {
     },
   ];
 
+  const { data: session,status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -43,7 +46,14 @@ export function NavbarDemo() {
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
             {/* <NavbarButton variant="secondary">Login</NavbarButton> */}
-            <NavbarButton variant="primary">Login</NavbarButton>
+            {status === "loading" ? (
+          <NavbarButton disabled>Loading</NavbarButton>
+        ) : session ? (
+          <NavbarButton variant="primary" href="/profile">Profile</NavbarButton>
+        ) : (
+          <NavbarButton variant="primary" href="/login">Login</NavbarButton>
+        )}
+            
           </div>
         </NavBody>
 

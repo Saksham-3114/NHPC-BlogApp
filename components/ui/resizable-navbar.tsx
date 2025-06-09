@@ -249,7 +249,7 @@ export const NavbarLogo = () => {
 };
 
 export const NavbarButton = ({
-  href="/login",
+  href="",
   as: Tag = "a",
   children,
   className,
