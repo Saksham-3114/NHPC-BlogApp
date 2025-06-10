@@ -18,6 +18,7 @@ import GoogleSignInButton from "../ui/googleSignInButton";
 import { RadioGroup } from "@radix-ui/react-radio-group";
 import { RadioGroupItem } from "../ui/radio-group";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 const FormSchema = z.object({
   username: z.string().min(1, "Username is required").max(20, "Username must be at most 20 characters long"),
@@ -58,8 +59,10 @@ export default function RegisterForm(){
         })
         if(response.ok){
           router.push("/login");
+          toast.success("Registration Successful! Please login to continue.");
         }else{
           console.error("Registration Failed");
+          toast.error("Registration Failed. Please try again.");
         }
     }
     return(

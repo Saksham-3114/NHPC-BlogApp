@@ -15,6 +15,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
 import GoogleSignInButton from "../ui/googleSignInButton";
+import { CredentialsLogin } from "@/app/actions";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 const FormSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -23,6 +26,7 @@ const FormSchema = z.object({
 
 
 export default function LoginForm(){
+  const router = useRouter();
     const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -31,8 +35,24 @@ export default function LoginForm(){
     }
   });
 
-    const onSubmit=(values: z.infer<typeof FormSchema>)=>{
-        console.log(values)
+    const onSubmit= async (values: z.infer<typeof FormSchema>)=>{
+        // console.log(values)
+        try{
+          const formData = new FormData();
+          formData.append("email", values.email);
+          formData.append("password", values.password);
+          const response = await CredentialsLogin(formData);
+          if(response?.error){
+            console.error("Login failed:", response.error);
+            toast.error("Login failed: " + response.error);
+          }else{
+            router.push("/");
+            toast.success("Login successful!");
+          }
+        }catch(e){
+          console.error("Error during login:", e);
+          // Handle error appropriately, e.g., show a notification or message
+        }
     }
     return(
     <Form {...form}>

@@ -48,7 +48,7 @@ export function NavbarDemo() {
             {/* <NavbarButton variant="secondary">Login</NavbarButton> */}
             {status === "loading" ? (
           <NavbarButton disabled>Loading</NavbarButton>
-        ) : session ? (
+        ) : session?.user ? (
           <NavbarButton variant="primary" href="/profile">Profile</NavbarButton>
         ) : (
           <NavbarButton variant="primary" href="/login">Login</NavbarButton>
