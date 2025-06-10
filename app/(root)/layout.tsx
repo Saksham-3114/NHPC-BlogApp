@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
         <div className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-4 ">
           <SessionProvider><NavbarDemo/></SessionProvider>
-          <main className="min-h-fit overflow-scroll ">{children}</main>
+          <main className="min-h-fit overflow-hidden">{children}</main>
           <Footer/>
         </div>
   );

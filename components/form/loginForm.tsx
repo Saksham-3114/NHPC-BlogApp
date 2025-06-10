@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
-import GoogleSignInButton from "../ui/googleSignInButton";
+// import GoogleSignInButton from "../ui/googleSignInButton";
 import { CredentialsLogin } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
@@ -51,6 +51,7 @@ export default function LoginForm(){
           }
         }catch(e){
           console.error("Error during login:", e);
+          toast.error("Invalid Credentials");
           // Handle error appropriately, e.g., show a notification or message
         }
     }
@@ -90,7 +91,7 @@ export default function LoginForm(){
       <div className="mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 after:ml-4 after:block after:h-px after:flex-grow after:bg-stone-400">
         or
       </div>
-      <GoogleSignInButton>Login with Google</GoogleSignInButton>
+      {/* <GoogleSignInButton>Login with Google</GoogleSignInButton> */}
       <p className="text-center text-sm text-gray-600 mt-2">
         If you don&apos;t have an account, please&nbsp;
         <Link href="/register" className="text-blue-500 hover:underline">Register</Link> 

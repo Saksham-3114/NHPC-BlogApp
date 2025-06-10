@@ -4,6 +4,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { type User } from "next-auth";
 import { db } from "@/lib/db";
 import { compare } from "bcrypt";
+
+
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
     session: {
