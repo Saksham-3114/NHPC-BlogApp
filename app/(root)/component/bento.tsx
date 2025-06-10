@@ -8,6 +8,7 @@ import {
   IconSignature,
   IconTableColumn,
 } from "@tabler/icons-react";
+import Image from "next/image";
 
 export function BentoGridDemo() {
   return (
@@ -26,7 +27,7 @@ export function BentoGridDemo() {
   );
 }
 const Skeleton = () => (
-  <div className=" mx -auto flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 to-neutral-100"></div>
+  <Image src="/nhpclogo.png" alt="" height={200} width={200} className=" mx -auto flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 to-neutral-100"/>
 );
 const items = [
   {

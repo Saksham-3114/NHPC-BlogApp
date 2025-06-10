@@ -73,7 +73,14 @@ type Post={
     content: string;
     authorId: string;
     Category: string[];
+    likes: number;
 }
+
+type PostwithLike=Post&{
+  likeCount: number;
+}
+
+
 
 
 export function TabsDemo() {
@@ -81,13 +88,26 @@ export function TabsDemo() {
     const username=session?.user?.name;
 
     const [loading, setLoading] = useState(true);
-    const [posts,setPosts] = useState<Post[]>([]);
+    const [posts,setPosts] = useState<PostwithLike[]>([]);
     useEffect(()=>{
         const fetchPosts=async ()=>{
             setLoading(true);
             const res=await fetch(`/api/posts/authored?username=${username}`);
-            const data= await res.json();
-            setPosts(data);
+            const data: Post[]= await res.json();
+            // Fetch like counts for all posts
+      const postsWithLikes = await Promise.all(
+        data.map(async (post) => {
+          const likeRes = await fetch(`/api/posts/likecount?postid=${post.id}`);
+          const  likeCount  = await likeRes.json();
+
+          return {
+            ...post,
+            likeCount,
+          };
+        })
+      );
+
+      setPosts(postsWithLikes);
             setLoading(false);
         };
         fetchPosts();
@@ -95,18 +115,34 @@ export function TabsDemo() {
 
     
     const [likeLoading, setlikeLoading] = useState(true);
-    const [likedposts,setlikedPosts] = useState<Post[]>([]);
+    const [likedposts,setlikedPosts] = useState<PostwithLike[]>([]);
     useEffect(()=>{
         const fetchlikePosts=async ()=>{
             setlikeLoading(true);
             const res=await fetch(`/api/posts/liked?username=${username}`);
-            const data= await res.json();
-            setlikedPosts(data);
+            const data: Post[]= await res.json();
+            // Fetch like counts for all posts
+      const postsWithLikes = await Promise.all(
+        data.map(async (post) => {
+          const likeRes = await fetch(`/api/posts/likecount?postid=${post.id}`);
+          const  likeCount  = await likeRes.json();
+
+          return {
+            ...post,
+            likeCount,
+          };
+        })
+      );
+
+      setlikedPosts(postsWithLikes);
             setlikeLoading(false);
         };
         fetchlikePosts();
     },[username]);
     
+    console.log(posts);
+   
+
     if(loading) { return <div className="flex items-center justify-center h-full">Loading...</div>; }
 
     if(likeLoading) { return <div className="flex items-center justify-center h-full">Loading...</div>; }
@@ -131,7 +167,7 @@ export function TabsDemo() {
                 <div className="text-xs text-gray-500 mb-1 flex gap-2 items-center">
                   <span>{(it.createdAt).slice(0,10)}</span>
                   <span>•</span>
-                  {/* <span>{it.claps} claps</span> */}
+                  <span>{it.likeCount} Likes</span>
                 </div>
                 <p className="text-gray-700 text-sm line-clamp-2">Categories: {it.Category}</p>
               </div>
@@ -160,7 +196,7 @@ export function TabsDemo() {
                 <div className="text-xs text-gray-500 mb-1 flex gap-2 items-center">
                   <span>{(article.createdAt).slice(0,10)}</span>
                   <span>•</span>
-                  {/* <span>{article.claps} claps</span> */}
+                  <span>{article.likeCount} Likes</span>
                 </div>
                 <p className="text-gray-700 text-sm line-clamp-2">Categories: {article.Category}</p>
               </div>
