@@ -8,9 +8,6 @@ import * as z from "zod";
 const userSchema = z.object({
   username: z.string().min(1, "Username is required").max(20, "Username must be at most 20 characters long"),
   email: z.string().min(1, "Email is required").email("Invalid email address"),
-  type: z.enum(["user", "admin"], {
-    required_error: "You need to select a role.",
-  }),
   password: z.string().min(1, "Password is required").min(8, "Password must be at least 8 characters long")
 })
 
@@ -25,7 +22,7 @@ export async function OPTIONS() {
 export async function POST(req:Request){
     try{
         const body=await req.json();
-        const {username,email,type,password}=userSchema.parse(body);
+        const {username,email,password}=userSchema.parse(body);
 
         //check existing user by email
         const existingUserByEmail = await db.user.findUnique({
@@ -50,7 +47,6 @@ export async function POST(req:Request){
             data:{
                 name: username,
                 email: email,
-                role: type,
                 password: hashedPassword 
             }
         })

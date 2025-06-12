@@ -15,17 +15,12 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
 // import GoogleSignInButton from "../ui/googleSignInButton";
-import { RadioGroup } from "@radix-ui/react-radio-group";
-import { RadioGroupItem } from "../ui/radio-group";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 const FormSchema = z.object({
   username: z.string().min(1, "Username is required").max(20, "Username must be at most 20 characters long"),
   email: z.string().min(1, "Email is required").email("Invalid email address"),
-  type: z.enum(["user", "admin"], {
-    required_error: "You need to select a role.",
-  }),
   password: z.string().min(1, "Password is required").min(8, "Password must be at least 8 characters long"),
   confirmPassword: z.string().min(1, "Password Confirmation is required")
 }).refine((data) => data.password === data.confirmPassword, { path: ["confirmPassword"], message: "Passwords do not match"});
@@ -38,7 +33,6 @@ export default function RegisterForm(){
     defaultValues: {
       username: "",
       email: "",
-      type: "user",
       password: "",
       confirmPassword: ""
     }
@@ -53,7 +47,6 @@ export default function RegisterForm(){
           body: JSON.stringify({
             username: values.username,
             email: values.email,
-            type: values.type,
             password: values.password
           })
         })
@@ -90,40 +83,6 @@ export default function RegisterForm(){
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="Email" type="email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-row gap-6"
-                >
-                  <FormItem className="flex items-center gap-2">
-                    <FormControl>
-                      <RadioGroupItem value="user" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      User
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center gap-2">
-                    <FormControl>
-                      <RadioGroupItem value="admin" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      Admin
-                    </FormLabel>
-                  </FormItem>
-                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>

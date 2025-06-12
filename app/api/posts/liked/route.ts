@@ -14,6 +14,7 @@ export async function GET(req: Request){
                 }
             }
         },
+        orderBy: {createdAt: "desc"}
     })
     // console.log(posts);
     return NextResponse.json(posts);

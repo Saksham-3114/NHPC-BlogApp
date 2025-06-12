@@ -8,18 +8,32 @@ import {
   useSpring,
   MotionValue,
 } from "motion/react";
-import { BentoGridDemo } from "@/app/(root)/component/bento";
+import HomeBlogList from "../HomeBlogList";
 
+type Posts=({
+    _count: {
+        likes: number;
+    };
+} & {
+    id: string;
+    createdAt: Date;
+    content: string;
+    authorId: string;
+    title: string;
+    published: boolean;
+    Category: string[];
+})[]
 
 
 export const HeroParallax = ({
-  products,
+  products, posts
 }: {
   products: {
     title: string;
     link: string;
     thumbnail: string;
   }[];
+  posts: Posts
 }) => {
   const firstRow = products.slice(0, 5);
   const secondRow = products.slice(5, 10);
@@ -53,22 +67,22 @@ export const HeroParallax = ({
     springConfig
   );
   const translateY = useSpring(
-    useTransform(scrollYProgress, [0, 0.2], [-1400, 0]),
+    useTransform(scrollYProgress, [0, 0.2], [-2200, 250]),
     springConfig
   );
   return (
     <div
       ref={ref}
-      className="h-[300vh] py-40 overflow-hidden  antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
+      className="h-[500vh] py-40 overflow-hidden  antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
     >
       <Header />
       <div className="max-w-7xl relative mx-auto py-10 px-4 w-full  left-0 top-20">
       <h1 className="text-2xl md:text-7xl font-bold text-blue-900">
-        For You <br />
+        Recent Blogs <br />
       </h1>
     </div>
-      <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <BentoGridDemo/>
+      <div className="relative -z-10 min-h-screen flex items-center justify-center flex-wrap overflow-auto">
+          <HomeBlogList posts={posts}/>
       </div>
       <motion.div
         style={{

@@ -1,9 +1,36 @@
-"use client";
 import React from "react";
 import { HeroParallax } from "@/components/ui/hero-parallax";
+import {db} from "@/lib/db";
+ 
 
-export function HeroParallaxDemo() {
-  return <HeroParallax products={products} />;
+type Posts=({
+    _count: {
+        likes: number;
+    };
+} & {
+    id: string;
+    createdAt: Date;
+    content: string;
+    authorId: string;
+    title: string;
+    published: boolean;
+    Category: string[];
+})[]
+
+export async function HeroParallaxDemo() {
+  const posts : Posts = await db.post.findMany({
+    where:{published: true},
+    orderBy:{createdAt: "desc"},
+    take: 10,
+    include:{
+      _count:{
+        select:{
+          likes:true
+        }
+      }
+    }
+  })
+  return <HeroParallax products={products} posts={posts} />;
 }
 export const products = [
   {

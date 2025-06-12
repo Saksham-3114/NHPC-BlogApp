@@ -60,7 +60,7 @@ export default async function ProfilePage() {
         <h2 className="text-4xl font-semibold text-gray-900">Posts</h2>
         <TabsDemo/>
       </div>
-    </main>
+    </main> 
     );
 }
 
