@@ -143,7 +143,7 @@ export default function ContentForm({username}:{username:string}) {
   <p className="text-red-500 text-sm">{contenterrors}</p>
 )}
       <Button onClick={handleSubmit} disabled={pending}>
-        {pending ? 'Submitting...' : 'Create'}
+        {pending ? 'Submitting...' : 'Create & Send for Review'}
       </Button>
     </div>
   )

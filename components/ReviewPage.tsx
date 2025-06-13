@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useState, useMemo } from 'react';
-import { Search, Calendar, User, ArrowRight, Hash, Heart } from 'lucide-react';
+import React, { useState, useMemo,} from 'react';
+import { Search, Calendar, User, Hash, Heart, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Button } from './ui/button';
+import { ReviewBlog } from '@/app/actions/reviewActions';
 
 interface User {
   id: string;
@@ -20,7 +22,6 @@ interface Like {
   author?: User;
 }
 
-
 interface Post {
   id: string;
   title: string;
@@ -37,12 +38,19 @@ interface BlogPageProps {
   posts: Post[];
 }
 
-const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
-  const [posts] = useState(initialPosts);
+interface Toast {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
+const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
+  const [posts, setPosts] = useState(initialPosts);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [isLoading, setIsLoading] = useState<string | null>(null);
 
- 
   const categories = useMemo(() => {
     const allCategories = posts.flatMap(post => post.Category || []);
     const uniqueCategories = [...new Set(allCategories)].filter(Boolean);
@@ -54,7 +62,6 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
       const matchesCategory = selectedCategory === 'All' || 
                              (post.Category && post.Category.includes(selectedCategory));
       
-      // Filter by search term
       const matchesSearch = searchTerm === '' || 
                            post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -68,15 +75,61 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
   }, [posts, selectedCategory, searchTerm]);
 
   const [currentPage, setCurrentPage] = useState(1);
-const postsPerPage = 6;
-const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const postsPerPage = 6;
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
-const paginatedPosts = useMemo(() => {
-  const start = (currentPage - 1) * postsPerPage;
-  const end = start + postsPerPage;
-  return filteredPosts.slice(start, end);
-}, [filteredPosts, currentPage]);
+  const paginatedPosts = useMemo(() => {
+    const start = (currentPage - 1) * postsPerPage;
+    const end = start + postsPerPage;
+    return filteredPosts.slice(start, end);
+  }, [filteredPosts, currentPage]);
 
+  // Toast functions
+  const addToast = (message: string, type: 'success' | 'error' | 'info') => {
+    const id = Date.now().toString();
+    const newToast = { id, message, type };
+    setToasts(prev => [...prev, newToast]);
+    
+    // Auto remove toast after 5 seconds
+    setTimeout(() => {
+      removeToast(id);
+    }, 5000);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  // Handle post review action
+  const handleReviewAction = async (postId: string, action: 'publish' | 'reject') => {
+    setIsLoading(postId);
+    
+    try {
+      const formData = new FormData();
+      formData.append('action', JSON.stringify({ postId, act: action }));
+      
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const result = await ReviewBlog(formData);
+      
+      // Update the post in the local state
+      setPosts(prevPosts => 
+        prevPosts.filter(post => 
+          post.id !== postId 
+        )
+      );
+      
+      // Show success toast
+      const actionText = action === 'publish' ? 'published' : 'rejected';
+      const postTitle = posts.find(p => p.id === postId)?.title || 'Post';
+      addToast(`"${postTitle}" has been ${actionText} successfully!`, 'success');
+      
+    } catch (error) {
+      console.error('Error updating post:', error);
+      addToast('Failed to update post. Please try again.', 'error');
+    } finally {
+      setIsLoading(null);
+    }
+  };
 
   const getCategoryCount = (category: string): number => {
     if (category === 'All') return posts.length;
@@ -100,24 +153,61 @@ const paginatedPosts = useMemo(() => {
     return `${readTime} min read`;
   };
 
-  
-
   const getLikeCount = (likes?: Like[]): number => {
     if (!likes || !Array.isArray(likes)) return 0;
-    return likes.filter(like => like.liked===false).length;
+    return likes.filter(like => like.liked === false).length;
   };
 
+  // Toast Component
+  const ToastContainer = () => (
+    <div className="fixed top-4 right-4 z-50 space-y-2">
+      {toasts.map((toast) => (
+        <div
+          key={toast.id}
+          className={`flex items-center p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 ${
+            toast.type === 'success' 
+              ? 'bg-green-50 border border-green-200 text-green-800' 
+              : toast.type === 'error'
+              ? 'bg-red-50 border border-red-200 text-red-800'
+              : 'bg-blue-50 border border-blue-200 text-blue-800'
+          }`}
+        >
+          <div className="flex-shrink-0 mr-3">
+            {toast.type === 'success' ? (
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            ) : toast.type === 'error' ? (
+              <AlertCircle className="w-5 h-5 text-red-500" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-blue-500" />
+            )}
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium">{toast.message}</p>
+          </div>
+          <button
+            onClick={() => removeToast(toast.id)}
+            className="flex-shrink-0 ml-3 hover:opacity-70"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-white mt-16">
+      {/* Toast Container */}
+      <ToastContainer />
+      
       {/* Header */}
       <header className="border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-8">
             <div>
-              <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">All Blogs</h1>
+              <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Review Blogs</h1>
               <p className="mt-2 text-lg text-gray-600">
-                Find and Search blogs here
+                Publish or Reject Blogs
               </p>
             </div>
             <div className="mt-6 sm:mt-0">
@@ -228,9 +318,6 @@ const paginatedPosts = useMemo(() => {
                         </a>
                       </h2>
 
-                      {/* Content Preview */}
-                      
-
                       {/* Categories */}
                       {post.Category && post.Category.length > 0 && (
                         <div className="flex items-center space-x-2">
@@ -254,72 +341,61 @@ const paginatedPosts = useMemo(() => {
                         <div className="flex items-center space-x-2">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                             post.published === 'true'
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {post.published ? 'Published' : 'Draft'}
+                                ? 'bg-green-100 text-green-800' 
+                                : post.published === 'false' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {post.published === 'true'
+                                ? 'Published' 
+                                : post.published === 'false' ? 'Under Review' : 'Rejected'
+                            }
                           </span>
                         </div>
                         
-                        {/* Read more link */}
-                        <a 
-                          href={`/blog/${post.id}`}
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors group-hover:underline"
-                        >
-                          Read more
-                          <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                        </a>
+                        {/* Action buttons */}
+                        <div className='flex gap-4 mx-6'>
+                          <Button 
+                            onClick={() => handleReviewAction(post.id, 'publish')}
+                            disabled={isLoading === post.id || post.published === 'true'}
+                            className='bg-green-300 text-green-700 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed'
+                          >
+                            {isLoading === post.id ? 'Processing...' : 'Publish'}
+                          </Button>
+                          <Button 
+                            onClick={() => handleReviewAction(post.id, 'reject')}
+                            disabled={isLoading === post.id || post.published === 'reject'}
+                            className='bg-red-300 text-red-700 hover:bg-red-400 disabled:opacity-50 disabled:cursor-not-allowed'
+                          >
+                            {isLoading === post.id ? 'Processing...' : 'Reject'}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </article>
                 ))}
+                
+                {/* Pagination */}
                 <div className="flex justify-center mt-10 space-x-2">
-  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-    <button
-      key={page}
-      onClick={() => setCurrentPage(page)}
-      className={`px-3 py-1 rounded-md text-sm font-medium border ${
-        page === currentPage
-          ? 'bg-blue-600 text-white border-blue-600'
-          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-      }`}
-    >
-      {page}
-    </button>
-  ))}
-</div>
-
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 rounded-md text-sm font-medium border ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="text-center py-16">
                 <div className="text-gray-400 mb-4">
                   <Search className="w-16 h-16 mx-auto" />
                 </div>
-                <h3 className="text-xl font-medium text-gray-900 mb-2">No posts found</h3>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  {searchTerm ? (
-                    <>
-                      No posts match your search for {searchTerm}. 
-                      Try different keywords or browse all posts.
-                    </>
-                  ) : (
-                    <>
-                      No posts are available in this category yet. 
-                      Check back later for new content.
-                    </>
-                  )}
-                </p>
-                {(searchTerm || selectedCategory !== 'All') && (
-                  <button
-                    onClick={() => {
-                      setSearchTerm('');
-                      setSelectedCategory('All');
-                    }}
-                    className="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    View all posts
-                  </button>
-                )}
+                <h3 className="text-xl font-medium text-gray-900 mb-2">No posts found to review</h3>
               </div>
             )}
           </main>
@@ -329,4 +405,4 @@ const paginatedPosts = useMemo(() => {
   );
 };
 
-export default BlogPage;
+export default ReviewPage;

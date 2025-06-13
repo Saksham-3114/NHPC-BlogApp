@@ -25,7 +25,7 @@ export interface Post {
   id: string;
   title: string;
   content: string;
-  published: boolean;
+  published: "true" | "false" | "reject";
   Category: string[];
   authorId: string;
   createdAt: Date | string;
@@ -66,7 +66,7 @@ export default async function Blog() {
       createdAt: 'desc'
     },
     where: {
-      published: true 
+      published: 'true' 
     }
   })
 

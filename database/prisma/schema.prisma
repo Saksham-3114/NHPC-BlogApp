@@ -10,13 +10,14 @@ datasource db {
 
 model User {
   id        String    @id @default(uuid())
+  image     String    @default("/profile.jpeg")
   email     String    @unique
   password  String
   name      String    @unique
   role      Role      @default(user)
-  bio       String?
+  bio       String   @default("No Bio Available")
+  designation String @default("No Designation Added")
   createdAt DateTime  @default(now()) @map("created_at")
-  comments  Comment[]
   likes     Like[]
   post      Post[]
 
@@ -27,27 +28,14 @@ model Post {
   id        String    @id @default(uuid())
   title     String
   content   String
-  published Boolean   @default(false)
+  published Publish   @default(false)
   Category  String[]
   authorId  String
   createdAt DateTime  @default(now()) @map("created_at")
-  comments  Comment[]
   likes     Like[]
   author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("posts")
-}
-
-model Comment {
-  id        String   @id @default(uuid())
-  content   String
-  postId    String
-  authorId  String
-  createdAt DateTime @default(now()) @map("created_at")
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@map("comments")
 }
 
 model Like {
@@ -66,4 +54,10 @@ model Like {
 enum Role {
   user
   admin
+}
+
+enum Publish {
+  true
+  false
+  reject
 }

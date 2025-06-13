@@ -13,13 +13,13 @@ type Posts=({
     content: string;
     authorId: string;
     title: string;
-    published: boolean;
+    published: "true" | "false" | "reject";
     Category: string[];
 })[]
 
 export async function HeroParallaxDemo() {
   const posts : Posts = await db.post.findMany({
-    where:{published: true},
+    where:{published: 'true'},
     orderBy:{createdAt: "desc"},
     take: 10,
     include:{

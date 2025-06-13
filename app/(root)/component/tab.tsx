@@ -10,7 +10,7 @@ type Post={
     id: string;
     title: string;
     createdAt: string;
-    published: boolean;
+    published: "true" | "false" | "reject";
     content: string;
     authorId: string;
     Category: string[];

@@ -9,7 +9,7 @@ type Post={
     id: string;
     title: string;
     createdAt: string;
-    published: boolean;
+    published: "true" | "false" | "reject";
     content: string;
     authorId: string;
     Category: string[];
@@ -155,11 +155,14 @@ const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , d
                         <div className="flex items-center justify-between pt-2">
                           <div className="flex items-center space-x-2">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              post.published 
+                              post.published === 'true'
                                 ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
+                                : post.published === 'false' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                             }`}>
-                              {post.published ? 'Published' : 'Under Review'}
+                              {post.published === 'true'
+                                ? 'Published' 
+                                : post.published === 'false' ? 'Under Review' : 'Rejected'
+                            }
                             </span>
                           </div>
                           

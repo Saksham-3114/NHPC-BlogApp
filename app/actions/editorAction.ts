@@ -24,7 +24,7 @@ export async function createBlogAction(data: {
         title: data.title,
         Category: data.categories,
         content: data.content,
-        published: false,
+        published: 'false',
         authorId: user?.id
       }
     })

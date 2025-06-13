@@ -9,6 +9,7 @@ interface User {
   name: string;
   role: 'user' | 'admin';
   createdAt: Date | string;
+  bio: string | null;
 }
 
 interface Like {
@@ -37,7 +38,7 @@ interface BlogPageProps {
   posts: Post[];
 }
 
-const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
+const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
   const [posts] = useState(initialPosts);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -66,17 +67,6 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
       return matchesCategory && matchesSearch;
     });
   }, [posts, selectedCategory, searchTerm]);
-
-  const [currentPage, setCurrentPage] = useState(1);
-const postsPerPage = 6;
-const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-
-const paginatedPosts = useMemo(() => {
-  const start = (currentPage - 1) * postsPerPage;
-  const end = start + postsPerPage;
-  return filteredPosts.slice(start, end);
-}, [filteredPosts, currentPage]);
-
 
   const getCategoryCount = (category: string): number => {
     if (category === 'All') return posts.length;
@@ -115,9 +105,9 @@ const paginatedPosts = useMemo(() => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-8">
             <div>
-              <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">All Blogs</h1>
+              <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Blogs by {posts[0].author?.name}</h1>
               <p className="mt-2 text-lg text-gray-600">
-                Find and Search blogs here
+                About Author: {posts[0].author?.bio}
               </p>
             </div>
             <div className="mt-6 sm:mt-0">
@@ -191,7 +181,7 @@ const paginatedPosts = useMemo(() => {
             {/* Posts List */}
             {filteredPosts.length > 0 ? (
               <div className="space-y-8">
-                {paginatedPosts.map((post) => (
+                {filteredPosts.map((post) => (
                   <article key={post.id} className="group border-b border-gray-500 pb-5">
                     <div className="flex flex-col space-y-3">
                       {/* Meta information */}
@@ -273,22 +263,6 @@ const paginatedPosts = useMemo(() => {
                     </div>
                   </article>
                 ))}
-                <div className="flex justify-center mt-10 space-x-2">
-  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-    <button
-      key={page}
-      onClick={() => setCurrentPage(page)}
-      className={`px-3 py-1 rounded-md text-sm font-medium border ${
-        page === currentPage
-          ? 'bg-blue-600 text-white border-blue-600'
-          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-      }`}
-    >
-      {page}
-    </button>
-  ))}
-</div>
-
               </div>
             ) : (
               <div className="text-center py-16">
@@ -329,4 +303,4 @@ const paginatedPosts = useMemo(() => {
   );
 };
 
-export default BlogPage;
+export default UserBlogList;

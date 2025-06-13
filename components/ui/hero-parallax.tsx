@@ -20,7 +20,7 @@ type Posts=({
     content: string;
     authorId: string;
     title: string;
-    published: boolean;
+    published: "true" | "false" | "reject";
     Category: string[];
 })[]
 

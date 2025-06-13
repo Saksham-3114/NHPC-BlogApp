@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(){
     const posts = await db.post.findMany({
-        where: {published:true},
+        where: {published:'true'},
         orderBy:{createdAt: "desc"},
         take: 10,
     })

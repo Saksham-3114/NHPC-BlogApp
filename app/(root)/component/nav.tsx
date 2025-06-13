@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import {
   Navbar,
@@ -10,32 +11,119 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
-
 export function NavbarDemo() {
-  const { data: session,status } = useSession();
-  const navItems = [
-    {
-      name: "For You",
-      link: "/",
-    },
-    {
-      name: "Blogs",
-      link: "/blog",
-    },
-    {
-      name: "Write",
-      link: `/write/${session?.user?.name || null}`,
-    },
-    {
-      name: "Search",
-      link: "#contact",
-    },
+  const { data: session, status, update } = useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminCheckComplete, setAdminCheckComplete] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Base nav items that don't change
+  const baseNavItems = [
+    { name: "For You", link: "/" },
+    { name: "Blogs", link: "/blog" },
   ];
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Compute nav items based on session and admin status
+  const navItems = [
+    ...baseNavItems,
+    // Only add Write link if user is authenticated
+    ...(status === "authenticated" && session?.user?.name 
+      ? [{ name: "Write", link: `/write/${session.user.name}` }] 
+      : []
+    ),
+    // Only add Review link if user is admin
+    ...(status === "authenticated" && isAdmin ? [{ name: "Review", link: "/review" }] : []),
+  ];
+
+  // Reset admin state immediately when session becomes unauthenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      setIsAdmin(false);
+      setAdminCheckComplete(true);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const fetchIsAdmin = async () => {
+      // Only check admin status if we have an authenticated session
+      if (status !== "authenticated" || !session?.user?.name) {
+        setIsAdmin(false);
+        setAdminCheckComplete(true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/isAdmin?name=${encodeURIComponent(session.user.name)}`, {
+          // Add cache busting to ensure fresh data
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        if (!res.ok) {
+          throw new Error('Failed to fetch admin status');
+        }
+        
+        const adminData = await res.json();
+        setIsAdmin(adminData?.role === 'admin');
+      } catch (error) {
+        console.error('Failed to check admin status:', error);
+        setIsAdmin(false);
+      } finally {
+        setAdminCheckComplete(true);
+      }
+    };
+
+    // Reset states when loading
+    if (status === "loading") {
+      setAdminCheckComplete(false);
+      setIsAdmin(false);
+      return;
+    }
+
+    fetchIsAdmin();
+  }, [session?.user?.name, status]);
+
+  // Force session refresh on window focus (helps catch logout from other tabs)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (status !== "loading") {
+        update();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [status, update]);
+
+  // Close mobile menu when session changes (like after logout)
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [status]);
+
+  const renderAuthButton = () => {
+    if (status === "loading") {
+      return <NavbarButton disabled>Loading</NavbarButton>;
+    }
+    
+    if (status === "authenticated" && session?.user?.name) {
+      return (
+        <NavbarButton variant="primary" href={`/profile/${session.user.name}`}>
+          Profile
+        </NavbarButton>
+      );
+    }
+    
+    return (
+      <NavbarButton variant="primary" href="/login">
+        Login
+      </NavbarButton>
+    );
+  };
 
   return (
     <div className="relative w-full">
@@ -45,15 +133,7 @@ export function NavbarDemo() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            {/* <NavbarButton variant="secondary">Login</NavbarButton> */}
-            {status === "loading" ? (
-          <NavbarButton disabled>Loading</NavbarButton>
-        ) : session?.user ? (
-          <NavbarButton variant="primary" href={`/profile/${session?.user.name}`}>Profile</NavbarButton>
-        ) : (
-          <NavbarButton variant="primary" href="/login">Login</NavbarButton>
-        )}
-            
+            {renderAuthButton()}
           </div>
         </NavBody>
 
@@ -73,7 +153,7 @@ export function NavbarDemo() {
           >
             {navItems.map((item, idx) => (
               <a
-                key={`mobile-link-${idx}`}
+                key={`mobile-link-${item.name}-${idx}`}
                 href={item.link}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="relative text-neutral-600 dark:text-neutral-300"
@@ -82,124 +162,11 @@ export function NavbarDemo() {
               </a>
             ))}
             <div className="flex w-full flex-col gap-4">
-              {status === "loading" ? (
-          <NavbarButton disabled>Loading</NavbarButton>
-        ) : session?.user ? (
-          <NavbarButton variant="primary" href={`/profile/${session?.user.name}`}>Profile</NavbarButton>
-        ) : (
-          <NavbarButton variant="primary" href="/login">Login</NavbarButton>
-        )}
-              {/* <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Book a call
-              </NavbarButton> */}
+              {renderAuthButton()}
             </div>
           </MobileNavMenu>
         </MobileNav>
       </Navbar>
-      {/* <DummyContent /> */}
-
-      {/* Navbar */}
     </div>
   );
 };
-
-// const DummyContent = () => {
-//   return (
-//     <div className="container mx-auto p-8 pt-24">
-//       <h1 className="mb-4 text-center text-3xl font-bold">
-//         Check the navbar at the top of the container
-//       </h1>
-//       <p className="mb-10 text-center text-sm text-zinc-500">
-//         For demo purpose we have kept the position as{" "}
-//         <span className="font-medium">Sticky</span>. Keep in mind that this
-//         component is <span className="font-medium">fixed</span> and will not
-//         move when scrolling.
-//       </p>
-//       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-//         {[
-//           {
-//             id: 1,
-//             title: "The",
-//             width: "md:col-span-1",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 2,
-//             title: "First",
-//             width: "md:col-span-2",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 3,
-//             title: "Rule",
-//             width: "md:col-span-1",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 4,
-//             title: "Of",
-//             width: "md:col-span-3",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 5,
-//             title: "F",
-//             width: "md:col-span-1",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 6,
-//             title: "Club",
-//             width: "md:col-span-2",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 7,
-//             title: "Is",
-//             width: "md:col-span-2",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 8,
-//             title: "You",
-//             width: "md:col-span-1",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 9,
-//             title: "Do NOT TALK about",
-//             width: "md:col-span-2",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//           {
-//             id: 10,
-//             title: "F Club",
-//             width: "md:col-span-1",
-//             height: "h-60",
-//             bg: "bg-neutral-100 dark:bg-neutral-800",
-//           },
-//         ].map((box) => (
-//           <div
-//             key={box.id}
-//             className={`${box.width} ${box.height} ${box.bg} flex items-center justify-center rounded-lg p-4 shadow-sm`}
-//           >
-//             <h2 className="text-xl font-medium">{box.title}</h2>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-  // );
-// };

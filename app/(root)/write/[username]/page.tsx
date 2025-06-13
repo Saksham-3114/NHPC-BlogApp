@@ -9,9 +9,10 @@ export default async function WritePage({params}: {params:{username:string | nul
     redirect("/login")
   }
   const username = (await params).username;
-  if(!username) redirect("/login");
+  if(!username) redirect("/");
+    if(session.user.name!=username) redirect("/");
     return (
-    <section className='py-20'>
+    <section className='py-7'>
       <div className='container  mx-auto p-10 w-fit rounded-xl flex flex-col items-center'>
         <h1 className='text-3xl font-bold'>Write a blog</h1>
 

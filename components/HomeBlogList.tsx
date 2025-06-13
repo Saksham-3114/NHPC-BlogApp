@@ -13,7 +13,7 @@ type Post=({
     content: string;
     authorId: string;
     title: string;
-    published: boolean;
+    published: "true" | "false" | "reject";
     Category: string[];
 })
 
@@ -42,7 +42,7 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
   // Update local state when initialPosts change
   useEffect(() => {
     setPosts(initialPosts);
-  }, [initialPosts]);
+  }, [initialPosts]); 
 
   // Handle external refresh triggers
   useEffect(() => {
@@ -154,6 +154,16 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
     });
   }, [posts, selectedCategory]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+const postsPerPage = 6;
+const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+const paginatedPosts = useMemo(() => {
+  const start = (currentPage - 1) * postsPerPage;
+  const end = start + postsPerPage;
+  return filteredPosts.slice(start, end);
+}, [filteredPosts, currentPage]);
+
   const formatDate = (dateString: Date | string): string => {
     if (!dateString) return 'No date';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -196,7 +206,7 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
                   </p>
                 </div>
               ) : (
-                filteredPosts.map((post) => {
+                paginatedPosts.map((post) => {
                   return (
                     <article 
                       key={post.id} 
@@ -253,7 +263,7 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
                         <div className="flex items-center justify-between pt-2">
                           <div className="flex items-center space-x-2">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium transition-colors ${
-                              post.published 
+                              post.published === 'true'
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}>
@@ -275,6 +285,21 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
                   );
                 })
               )}
+              <div className="flex justify-center mt-10 space-x-2">
+  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+    <button
+      key={page}
+      onClick={() => setCurrentPage(page)}
+      className={`px-3 py-1 rounded-md text-sm font-medium border ${
+        page === currentPage
+          ? 'bg-blue-600 text-white border-blue-600'
+          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+      }`}
+    >
+      {page}
+    </button>
+  ))}
+</div>
             </div>
           </main>
         </div>

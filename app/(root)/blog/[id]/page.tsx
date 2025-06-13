@@ -120,7 +120,7 @@ export default async function Blog({ params }: { params: { id: string } }) {
               prose-li:text-gray-700 prose-li:mb-1
               prose-img:rounded-lg prose-img:shadow-lg prose-img:border prose-img:border-gray-200
               prose-hr:border-gray-200 prose-hr:my-8
-              focus:outline-none text-wrap"
+              focus:outline-none break-words whitespace-normal"
             dangerouslySetInnerHTML={{ __html: blog.content }}
           />
         </article>
