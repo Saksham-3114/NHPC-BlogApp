@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef } from 'react'
 import { Check, Trash } from 'lucide-react'
 import { useEditor } from 'novel'
