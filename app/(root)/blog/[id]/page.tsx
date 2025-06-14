@@ -4,7 +4,7 @@ import LikeButton from '@/app/(root)/component/likeButton'
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-export default async function Blog({ params }: { params: { id: string } }) {
+export default async function Blog({ params }: { params: Promise<{ id: string }> }) {
   const blogid = (await params).id;
   const session = await auth() 
   if(!session?.user){

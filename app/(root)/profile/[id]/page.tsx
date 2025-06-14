@@ -34,8 +34,21 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     designation: user?.designation || "Team Member",
   };
 
+  console.log(profile.avatar)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isAdmin = profile.role === "admin";
+
+  // Server action for handling logout
+  async function handleLogout() {
+    "use server";
+    
+    const res = await Logout();
+    if (res?.error) {
+      console.error("Logout failed:", res.error);
+    } else {
+      redirect("/");
+    }
+  }
 
   return (
     <main className="min-h-screen relative overflow-hidden mt-14">
@@ -96,7 +109,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               >
                  Edit Profile
               </NavbarButton>
-              <form action={Logout} className="flex-1 min-w-[140px]">
+              <form action={handleLogout} className="flex-1 min-w-[140px]">
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl hover:shadow-xl transition-all duration-300 transform hover:scale-105

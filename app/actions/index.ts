@@ -7,7 +7,14 @@ export async function GoogleLogin(){
 }
 
 export async function Logout(){
-    await signOut({redirectTo: "/"})
+    try{
+        const res=await signOut({redirect: false});
+        if(res?.error) throw new Error(res.error);
+        return res;
+    }
+    catch(e){
+        throw new Error("Error",{cause:e})
+    }
 }
 
 export async function CredentialsLogin(formData: FormData){
