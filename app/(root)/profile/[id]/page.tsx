@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 import { Logout } from "@/app/actions";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import Image from "next/image";
 import { db } from "@/lib/db";
 import { TabsDemo } from "../../component/tab";
 import { NavbarButton } from "@/components/ui/resizable-navbar";
@@ -34,7 +34,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     designation: user?.designation || "Team Member",
   };
 
-  console.log(profile.avatar)
+  // console.log(profile.avatar)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isAdmin = profile.role === "admin";
 
@@ -62,13 +62,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <div className="relative mb-6">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full animate-pulse opacity-20 scale-110"></div>
                 <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-2xl">
-                  <Image
+                  <img
                     src={profile.avatar}
                     alt={profile.name as string || "User Avatar"}
                     width={112}
                     height={112}
                     className="object-cover w-full h-full"
-                    priority
+                    fetchPriority="high"
                   />
                 </div>
                 {/* Status Indicator */}
