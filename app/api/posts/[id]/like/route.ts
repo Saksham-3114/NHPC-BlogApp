@@ -3,9 +3,10 @@ import { db } from '@/lib/db'
 import { auth } from '@/auth' 
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  req: NextRequest
 ) {
+   const url = new URL(req.url);
+  const postId = url.pathname.split('/').at(-2) as string;
   try {
     // Get the current user (adjust this based on your auth implementation)
     const session = await auth()
@@ -14,7 +15,6 @@ export async function POST(
     }
     // console.log(session.user.id);
 
-    const postId = (await params).id
     const username = session.user.name as string
 
     const user= await db.user.findUnique({
