@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import ContentForm from '@/components/content-form'
 import { redirect } from 'next/navigation';
 
-export default async function WritePage({params}: {params:{username:string | null}}){
+export default async function WritePage({params}: {params:{username:string}}){
   const session = await auth();
   if(!session?.user){
     redirect("/login")
