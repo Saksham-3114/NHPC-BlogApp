@@ -6,7 +6,6 @@ async function main() {
     // Delete existing data
     await prisma.user.deleteMany();
     await prisma.post.deleteMany();
-    await prisma.comment.deleteMany();
     await prisma.like.deleteMany();
 
     // Create users
@@ -39,7 +38,7 @@ async function main() {
         data:{
             title: "Post 1",
             content: "Content of post 1",
-            published: true,
+            published: 'true',
             author:{
                 connect: { id: user1.id },
             },
@@ -49,7 +48,7 @@ async function main() {
         data:{
             title: "Post 2",
             content: "Content of post 2",
-            published: true,
+            published: 'true',
             author:{
                 connect: { id: user2.id },
             },
@@ -65,26 +64,6 @@ async function main() {
         },
     });
 
-    // Create comments
-    await prisma.comment.createMany({
-        data: [
-            {
-                content: "Comment on post 1 by user 2",
-                postId: post1.id,
-                authorId: user2.id,
-            },
-            {
-                content: "Comment on post 2 by user 3",
-                postId: post2.id,
-                authorId: user3.id,
-            },
-            {
-                content: "Another comment on post 1 by user 3",
-                postId: post1.id,
-                authorId: user3.id,
-            },
-        ],
-    });
 
     // Create likes
     await prisma.like.createMany({

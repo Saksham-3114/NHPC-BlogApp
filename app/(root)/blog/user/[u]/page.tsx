@@ -67,7 +67,7 @@ export default async function UserBlog({params}:{params:Promise<{u:string}>}) {
       createdAt: 'desc'
     },
     where: {
-      published: true, 
+      published: 'true', 
       author:{
         name: u
       }
