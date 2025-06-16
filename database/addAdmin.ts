@@ -8,10 +8,10 @@ async function main() {
     const hashedPass = await hash(pass,10)
     const admin=await db.user.create({
         data: {
-            email: "admin1@nhpc.com",
+            email: "admin3@nhpc.com",
             password: hashedPass,
             role: "admin",
-            name: "admin1",
+            name: "admin3",
         },
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
