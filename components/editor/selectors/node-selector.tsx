@@ -41,25 +41,43 @@ const items: SelectorItem[] = [
     name: 'Heading 1',
     icon: Heading1,
     command: editor =>
-      editor?.chain().focus().clearNodes().toggleHeading({ level: 1 }).run(),
+      editor?.chain().focus().clearNodes().setNode('customHeading',{
+          level: 1,
+          class: 'text-4xl font-bold'
+        }).run(),
     isActive: editor =>
-      editor ? editor.isActive('heading', { level: 1 }) : false
+      editor ? editor.isActive('customHeading',{
+          level: 1,
+          class: 'text-4xl font-bold'
+        }) : false
   },
   {
     name: 'Heading 2',
     icon: Heading2,
     command: editor =>
-      editor?.chain().focus().clearNodes().toggleHeading({ level: 2 }).run(),
+      editor?.chain().focus().clearNodes().setNode('customHeading',{
+          level: 1,
+          class: 'text-2xl font-bold'
+        }).run(),
     isActive: editor =>
-      editor ? editor.isActive('heading', { level: 2 }) : false
+      editor ? editor.isActive('customHeading',{
+          level: 1,
+          class: 'text-2xl font-bold'
+        }) : false
   },
   {
     name: 'Heading 3',
     icon: Heading3,
     command: editor =>
-      editor?.chain().focus().clearNodes().toggleHeading({ level: 3 }).run(),
+      editor?.chain().focus().clearNodes().setNode('customHeading',{
+          level: 1,
+          class: 'text-xl font-bold'
+        }).run(),
     isActive: editor =>
-      editor ? editor.isActive('heading', { level: 3 }) : false
+      editor ? editor.isActive('customHeading',{
+          level: 1,
+          class: 'text-xl font-bold'
+        }) : false
   },
   {
     name: 'To-do List',

@@ -51,7 +51,10 @@ export const suggestionItems = createSuggestionItems([
         .chain()
         .focus()
         .deleteRange(range)
-        .setNode('heading',{level: 1})
+        .setNode('customHeading',{
+          level: 1,
+          class: 'text-4xl font-bold'
+        })
         .run()
     }
   },
@@ -65,7 +68,10 @@ export const suggestionItems = createSuggestionItems([
         .chain()
         .focus()
         .deleteRange(range)
-        .setNode('heading', { level: 2 })
+        .setNode('customHeading',{
+          level: 1,
+          class: 'text-2xl font-bold'
+        })
         .run()
     }
   },
@@ -79,7 +85,10 @@ export const suggestionItems = createSuggestionItems([
         .chain()
         .focus()
         .deleteRange(range)
-        .setNode('heading', { level: 3 })
+        .setNode('customHeading',{
+          level: 3,
+          class: 'text-xl font-bold'
+        })
         .run()
     }
   },

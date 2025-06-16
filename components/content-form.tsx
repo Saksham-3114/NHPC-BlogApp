@@ -31,10 +31,6 @@ export const defaultValue = {
     {
       type: 'paragraph',
       content: [
-        {
-      type: 'text',
-      text: "Press '/' for Options or Write something...."
-    }
       ]
     }
   ]

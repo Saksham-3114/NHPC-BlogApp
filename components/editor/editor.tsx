@@ -27,7 +27,6 @@ import { defaultExtensions } from '@/components/editor/extensions'
 import { TextButtons } from '@/components/editor/selectors/text-buttons'
 import { LinkSelector } from '@/components/editor/selectors/link-selector'
 import { NodeSelector } from '@/components/editor/selectors/node-selector'
-import { MathSelector } from '@/components/editor/selectors/math-selector'
 import { ColorSelector } from '@/components/editor/selectors/color-selector'
 
 import { Separator } from '@/components/ui/separator'
@@ -127,8 +126,6 @@ export default function Editor({ initialValue, onChange }: EditorProps) {
             <Separator orientation='vertical' />
             <LinkSelector open={openLink} onOpenChange={setOpenLink} />
 
-            <Separator orientation='vertical' />
-            <MathSelector />
 
             <Separator orientation='vertical' />
             <TextButtons />
