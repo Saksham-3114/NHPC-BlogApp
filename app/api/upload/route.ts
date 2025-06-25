@@ -1,32 +1,38 @@
-import { put } from '@vercel/blob'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
+import { existsSync } from 'fs';
 
-export const runtime = 'edge'
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
 
-export async function POST(req: Request) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return new Response(
-      "Missing BLOB_READ_WRITE_TOKEN. Don't forget to add that to your .env file.",
-      {
-        status: 401
-      }
-    )
+    if (!file) {
+      return NextResponse.json({ error: 'No file received' }, { status: 400 });
+    }
+
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const fileExtension = path.extname(file.name);
+    const filename = `${timestamp}-${randomString}${fileExtension}`;
+
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!existsSync(uploadsDir)) {
+      await mkdir(uploadsDir, { recursive: true });
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const filePath = path.join(uploadsDir, filename);
+    
+    await writeFile(filePath, buffer);
+
+    const url = `/uploads/${filename}`;
+    
+    return NextResponse.json({ url }, { status: 200 });
+  } catch (error) {
+    console.error('Upload error:', error);
+    return NextResponse.json({ error: 'Error uploading file' }, { status: 500 });
   }
-
-  const file = req.body || ''
-  const filename = req.headers.get('x-vercel-filename') || 'file.txt'
-  const contentType = req.headers.get('content-type') || 'text/plain'
-  const fileType = `.${contentType.split('/')[1]}`
-
-  // construct final filename based on content-type if not provided
-  const finalName = filename.includes(fileType)
-    ? filename
-    : `${filename}${fileType}`
-  const blob = await put(finalName, file, {
-    contentType,
-    access: 'public',
-    addRandomSuffix: true,
-  })
-
-  return NextResponse.json(blob)
 }

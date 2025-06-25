@@ -58,7 +58,7 @@ export default async function Blog({ params }: { params: Promise<{ id: string }>
         {/* Header Section */}
         <header className="mb-12">
           <div className="text-sm text-gray-500 mb-4">
-            Published on {formattedDate}
+            Created on {formattedDate}
           </div>
           
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">

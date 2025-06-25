@@ -1,7 +1,5 @@
 import { db } from '@/lib/db' 
 import BlogPage from '@/components/BlogPage'
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 
 
 interface User {
@@ -34,10 +32,7 @@ export interface Post {
 }
 
 export default async function Blog() {
-  const session = await auth();
-  if(!session?.user){
-    redirect("/login")
-  }
+  
 
 
   const posts = await db.post.findMany({

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Calendar, User, ArrowRight, Hash, Heart } from 'lucide-react';
 
 interface User {
@@ -41,6 +41,12 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
   const [posts] = useState(initialPosts);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to page 1 when search term or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
 
  
   const categories = useMemo(() => {
@@ -67,15 +73,14 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
     });
   }, [posts, selectedCategory, searchTerm]);
 
-  const [currentPage, setCurrentPage] = useState(1);
-const postsPerPage = 6;
-const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const postsPerPage = 6;
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
-const paginatedPosts = useMemo(() => {
-  const start = (currentPage - 1) * postsPerPage;
-  const end = start + postsPerPage;
-  return filteredPosts.slice(start, end);
-}, [filteredPosts, currentPage]);
+  const paginatedPosts = useMemo(() => {
+    const start = (currentPage - 1) * postsPerPage;
+    const end = start + postsPerPage;
+    return filteredPosts.slice(start, end);
+  }, [filteredPosts, currentPage]);
 
 
   const getCategoryCount = (category: string): number => {
@@ -273,22 +278,23 @@ const paginatedPosts = useMemo(() => {
                     </div>
                   </article>
                 ))}
-                <div className="flex justify-center mt-10 space-x-2">
-  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-    <button
-      key={page}
-      onClick={() => setCurrentPage(page)}
-      className={`px-3 py-1 rounded-md text-sm font-medium border ${
-        page === currentPage
-          ? 'bg-blue-600 text-white border-blue-600'
-          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-      }`}
-    >
-      {page}
-    </button>
-  ))}
-</div>
-
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-10 space-x-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 rounded-md text-sm font-medium border ${
+                          page === currentPage
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-16">
