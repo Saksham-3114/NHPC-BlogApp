@@ -1,96 +1,103 @@
-import { PrismaClient } from "./generated/prisma";
+import { PrismaClient, Role, Publish } from './generated/prisma';
+import { hash } from 'bcrypt'
 
 const prisma = new PrismaClient();
 
 async function main() {
-    // Delete existing data
+  console.log('🌱 Starting seed...');
+  // Delete existing data
     await prisma.user.deleteMany();
     await prisma.post.deleteMany();
     await prisma.like.deleteMany();
+    await prisma.categories.deleteMany();
 
-    // Create users
-    const user1=await prisma.user.create({
-        data: {
-            email: "user1@nhpc.com",
-            password: "password1",
-            name: "user1",
-        },
-    });
+    const pass = "123123123"
+    const hashpass = await hash(pass,10);
+  // Create Users
+  const user1 = await prisma.user.create({
+    data: {
+      email: 'alice@example.com',
+      password: hashpass,
+      name: 'Alice',
+      role: Role.user,
+      bio: 'Climate enthusiast',
+      designation: 'Hydrologist'
+    },
+  });
 
-    const user2=await prisma.user.create({
-        data: {
-            email: "user2@nhpc.com",
-            password: "password2",
-            name: "user2",
-        },
-    });
+  const user2 = await prisma.user.create({
+    data: {
+      email: 'bob@example.com',
+      password: hashpass,
+      name: 'Bob',
+      role: Role.admin,
+      bio: 'Tech Lead',
+      designation: 'Engineer'
+    },
+  });
 
-    const user3=await prisma.user.create({
-        data: {
-            email: "user3@nhpc.com",
-            password: "password3",
-            name: "user3",
-        },
-    });
+  // Create Categories
+  const category1 = await prisma.categories.create({
+    data: {
+      name: 'Sustainability',
+    },
+  });
 
-    // Create posts
-    const post1=await prisma.post.create({
-        data:{
-            title: "Post 1",
-            content: "Content of post 1",
-            published: 'true',
-            author:{
-                connect: { id: user1.id },
-            },
-        },
-    });
-    const post2=await prisma.post.create({
-        data:{
-            title: "Post 2",
-            content: "Content of post 2",
-            published: 'true',
-            author:{
-                connect: { id: user2.id },
-            },
-        },
-    });
-    const post3=await prisma.post.create({
-        data:{
-            title: "Post 3",
-            content: "Content of post 3",
-            author:{
-                connect: { id: user1.id },
-            },
-        },
-    });
+  const category2 = await prisma.categories.create({
+    data: {
+      name: 'Technology',
+    },
+  });
 
+  // Create Posts
+  const post1 = await prisma.post.create({
+    data: {
+      title: 'Green Energy for the Future',
+      summary: 'A deep dive into hydro power and sustainability.',
+      content: 'This is a detailed content about hydro power.',
+      tags: ['hydropower', 'green', 'energy'],
+      authorId: user1.id,
+      categoryId: category1.id,
+      published: Publish.true,
+    },
+  });
 
-    // Create likes
-    await prisma.like.createMany({
-        data: [
-            {
-                postId: post3.id,
-                authorId: user2.id,
-            },
-            {
-                postId: post2.id,
-                authorId: user3.id,
-            },
-            {
-                postId: post1.id,
-                authorId: user3.id,
-            },
-        ],
-    });
+  const post2 = await prisma.post.create({
+    data: {
+      title: 'AI in Hydrology',
+      content: 'Exploring AI use in river flow prediction.',
+      tags: ['AI', 'hydrology'],
+      authorId: user2.id,
+      categoryId: category2.id,
+      published: Publish.false,
+    },
+  });
+
+  // Add Likes
+  await prisma.like.create({
+    data: {
+      authorId: user1.id,
+      postId: post2.id,
+      liked: true,
+    },
+  });
+
+  await prisma.like.create({
+    data: {
+      authorId: user2.id,
+      postId: post1.id,
+      liked: true,
+    },
+  });
+
+  console.log('✅ Seeding complete!');
 }
 
 main()
-.then(async()=>{
-    await prisma.$disconnect();
-    console.log("seeded successfully");
-})
-.catch(async(e)=>{
-    console.error("Error seeding database:", e);
-    await prisma.$disconnect();
+  .catch((e) => {
+    console.error('❌ Error while seeding:', e);
     process.exit(1);
-})
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

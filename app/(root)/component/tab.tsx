@@ -6,15 +6,22 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 
-type Post={
-    id: string;
-    title: string;
-    createdAt: string;
-    published: "true" | "false" | "reject";
-    content: string;
-    authorId: string;
-    Category: string[];
-    likes: number;
+interface Categories{
+  id: string;
+  name: string;
+}
+
+export interface Post {
+  id: string;
+  title: string;
+  summary: string | null;
+  image: string;
+  content: string;
+  published: "true" | "false" | "reject";
+  tags: string[];
+  authorId: string;
+  createdAt: Date | string;
+  category?: Categories;
 }
 
 type PostwithLike=Post&{

@@ -22,15 +22,23 @@ interface Like {
   author?: User;
 }
 
-interface Post {
+interface Categories{
+  id: string;
+  name: string;
+}
+
+export interface Post {
   id: string;
   title: string;
+  summary: string | null;
+  image: string;
   content: string;
   published: "true" | "false" | "reject";
-  Category: string[];
+  tags: string[];
   authorId: string;
   createdAt: Date | string;
   author?: User;
+  category?: Categories;
   likes?: Like[];
 }
 
@@ -46,33 +54,33 @@ interface Toast {
 
 const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
   const [posts, setPosts] = useState(initialPosts);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedtags, setSelectedtags] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
   const categories = useMemo(() => {
-    const allCategories = posts.flatMap(post => post.Category || []);
+    const allCategories = posts.flatMap(post => post.tags || []);
     const uniqueCategories = [...new Set(allCategories)].filter(Boolean);
     return ['All', ...uniqueCategories.sort()];
   }, [posts]);
 
   const filteredPosts = useMemo(() => { 
     return posts.filter(post => {
-      const matchesCategory = selectedCategory === 'All' || 
-                             (post.Category && post.Category.includes(selectedCategory));
+      const matchestags = selectedtags === 'All' || 
+                             (post.tags && post.tags.includes(selectedtags));
       
       const matchesSearch = searchTerm === '' || 
                            post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (post.Category && post.Category.some(cat => 
+                           (post.tags && post.tags.some(cat => 
                              cat.toLowerCase().includes(searchTerm.toLowerCase())
                            )) ||
                            post.author?.name?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      return matchesCategory && matchesSearch;
+      return matchestags && matchesSearch;
     });
-  }, [posts, selectedCategory, searchTerm]);
+  }, [posts, selectedtags, searchTerm]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
@@ -131,9 +139,9 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
     }
   };
 
-  const getCategoryCount = (category: string): number => {
-    if (category === 'All') return posts.length;
-    return posts.filter(post => post.Category && post.Category.includes(category)).length;
+  const gettagsCount = (tags: string): number => {
+    if (tags === 'All') return posts.length;
+    return posts.filter(post => post.tags && post.tags.includes(tags)).length;
   };
 
   const formatDate = (dateString: Date | string): string => {
@@ -235,25 +243,25 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
                 Categories
               </h2>
               <nav className="space-y-1">
-                {categories.map((category) => (
+                {categories.map((tags) => (
                   <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
+                    key={tags}
+                    onClick={() => setSelectedtags(tags)}
                     className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between group ${
-                      selectedCategory === category
+                      selectedtags === tags
                         ? 'bg-gray-100 text-gray-900 font-medium'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     <span className="capitalize">
-                      {category === 'All' ? 'All Posts' : category}
+                      {tags === 'All' ? 'All Posts' : tags}
                     </span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      selectedCategory === category
+                      selectedtags === tags
                         ? 'bg-gray-200 text-gray-700'
                         : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200'
                     }`}>
-                      {getCategoryCount(category)}
+                      {gettagsCount(tags)}
                     </span>
                   </button>
                 ))}
@@ -272,8 +280,8 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
               )}
               <p className="text-sm text-gray-500">
                 {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found
-                {selectedCategory !== 'All' && (
-                  <span> in {selectedCategory}</span>
+                {selectedtags !== 'All' && (
+                  <span> in {selectedtags}</span>
                 )}
               </p>
             </div>
@@ -319,17 +327,17 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
                       </h2>
 
                       {/* Categories */}
-                      {post.Category && post.Category.length > 0 && (
+                      {post.tags && post.tags.length > 0 && (
                         <div className="flex items-center space-x-2">
                           <Hash className="w-4 h-4 text-gray-400" />
                           <div className="flex flex-wrap gap-1">
-                            {post.Category.map((category, index) => (
+                            {post.tags.map((tags, index) => (
                               <button
                                 key={index}
-                                onClick={() => setSelectedCategory(category)}
+                                onClick={() => setSelectedtags(tags)}
                                 className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition-colors cursor-pointer capitalize"
                               >
-                                {category}
+                                {tags}
                               </button>
                             ))}
                           </div>

@@ -21,15 +21,23 @@ interface Like {
   author?: User;
 }
 
+interface Categories{
+  id: string;
+  name: string;
+}
+
 export interface Post {
   id: string;
   title: string;
+  summary: string | null;
+  image: string;
   content: string;
-  published: boolean;
-  Category: string[];
+  published: "true" | "false" | "reject";
+  tags: string[];
   authorId: string;
   createdAt: Date | string;
   author?: User;
+  category?: Categories;
   likes?: Like[];
 }
 

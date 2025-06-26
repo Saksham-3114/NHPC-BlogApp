@@ -4,6 +4,11 @@ import { BackgroundBeamsWithCollisionDemo } from "./component/herobg";
 import HomeBlogList from "@/components/HomeBlogList";
 import { db } from "@/lib/db";
 
+type Categories={
+  id: string;
+  name: string;
+}
+
 type Posts=({
     _count: {
         likes: number;
@@ -15,7 +20,10 @@ type Posts=({
     authorId: string;
     title: string;
     published: "true" | "false" | "reject";
-    Category: string[];
+    tags: string[];
+    image: string;
+    summary: string | null;
+    category: Categories;
 })[]
 
 export default async function Home() {
@@ -30,9 +38,15 @@ export default async function Home() {
         select:{
           likes:true
         }
+      },
+      category:{
+        select:{
+          id: true,
+          name: true
+        }
       }
     }
-  })
+  }) 
   return (
     <>
     <BackgroundBeamsWithCollisionDemo/>
@@ -41,7 +55,7 @@ export default async function Home() {
         Recent Blogs <br />
       </h1>
     </div>
-      <div className="relative -z-10 min-h-screen flex items-center justify-center flex-wrap overflow-auto">
+      <div className="relative -z-10 min-h-screen flex justify-center flex-wrap overflow-auto">
           <HomeBlogList posts={posts}/>
       </div>
     </>

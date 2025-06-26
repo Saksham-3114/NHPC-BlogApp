@@ -5,15 +5,22 @@ import { Calendar, ArrowRight, Hash, Heart } from 'lucide-react';
 import { Button } from './ui/button';
 import { DeleteBlogAction } from '@/app/actions/deleteBlog';
 
-type Post={
-    id: string;
-    title: string;
-    createdAt: string;
-    published: "true" | "false" | "reject";
-    content: string;
-    authorId: string;
-    Category: string[];
-    likes: number;
+interface Categories{
+  id: string;
+  name: string;
+}
+
+export interface Post {
+  id: string;
+  title: string;
+  summary: string | null;
+  image: string;
+  content: string;
+  published: "true" | "false" | "reject";
+  tags: string[];
+  authorId: string;
+  createdAt: Date | string;
+  category?: Categories;
 }
 
 type PostwithLike=Post&{
@@ -29,14 +36,14 @@ const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , d
   const [posts, setPosts] = useState(initialPosts);
   const [deletingPosts, setDeletingPosts] = useState<Set<string>>(new Set());
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedtags, setSelectedtags] = useState('All');
 
   const filteredPosts = useMemo(() => {
     return posts.filter(() => {
-      const matchesCategory = selectedCategory === 'All' 
-      return matchesCategory;
+      const matchestags = selectedtags === 'All' 
+      return matchestags;
     });
-  }, [posts, selectedCategory]);
+  }, [posts, selectedtags]);
 
   const handleDeletePost = async (postId: string) => {
         const confirmed = window.confirm('Are you sure you want to delete this post? This action cannot be undone.');
@@ -134,17 +141,17 @@ const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , d
                         </h2>
 
                         {/* Categories */}
-                        {post.Category && post.Category.length > 0 && (
+                        {post.tags && post.tags.length > 0 && (
                           <div className="flex items-center space-x-2">
                             <Hash className="w-4 h-4 text-gray-400" />
                             <div className="flex flex-wrap gap-1">
-                              {post.Category.map((category, index) => (
+                              {post.tags.map((tags, index) => (
                                 <button
                                   key={index}
                                   disabled
                                   className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition-colors cursor-pointer capitalize"
                                 >
-                                  {category}
+                                  {tags}
                                 </button>
                               ))}
                             </div>

@@ -27,13 +27,17 @@ model User {
 model Post {
   id        String    @id @default(uuid())
   title     String
+  summary   String?
+  image     String    @default("/nhpclogo.png")
   content   String
   published Publish   @default(false)
-  Category  String[]
+  tags      String[]
   authorId  String
+  categoryId String   
   createdAt DateTime  @default(now()) @map("created_at")
   likes     Like[]
   author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category  Categories      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@map("posts")
 }
@@ -51,7 +55,16 @@ model Like {
   @@map("likes")
 }
 
-enum Role {
+model Categories {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  createdAt   DateTime @default(now())
+  posts       Post[]
+
+  @@map("categories")
+}
+
+enum Role { 
   user
   admin
 }

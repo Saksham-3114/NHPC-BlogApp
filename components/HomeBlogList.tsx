@@ -1,7 +1,13 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Calendar, ArrowRight, Hash, Heart } from 'lucide-react';
+import { Calendar, ArrowRight, Hash, Heart, Tag } from 'lucide-react';
+
+type Categories={
+  id: string;
+  name: string;
+}
 
 type Post=({
     _count: {
@@ -14,7 +20,10 @@ type Post=({
     authorId: string;
     title: string;
     published: "true" | "false" | "reject";
-    Category: string[];
+    tags: string[];
+    image: string;
+    summary: string | null;
+    category: Categories;
 })
 
 interface BlogPageProps {
@@ -155,14 +164,14 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
   }, [posts, selectedCategory]);
 
   const [currentPage, setCurrentPage] = useState(1);
-const postsPerPage = 6;
-const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const postsPerPage = 6;
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
-const paginatedPosts = useMemo(() => {
-  const start = (currentPage - 1) * postsPerPage;
-  const end = start + postsPerPage;
-  return filteredPosts.slice(start, end);
-}, [filteredPosts, currentPage]);
+  const paginatedPosts = useMemo(() => {
+    const start = (currentPage - 1) * postsPerPage;
+    const end = start + postsPerPage;
+    return filteredPosts.slice(start, end);
+  }, [filteredPosts, currentPage]);
 
   const formatDate = (dateString: Date | string): string => {
     if (!dateString) return 'No date';
@@ -210,96 +219,140 @@ const paginatedPosts = useMemo(() => {
                   return (
                     <article 
                       key={post.id} 
-                      className="group border-b border-gray-500 pb-5 transition-all duration-300 animate-in fade-in"
+                      className="group border-b border-gray-500 pb-8 transition-all duration-300 animate-in fade-in"
                     >
-                      <div className="flex flex-col space-y-3">
-                        {/* Meta information */}
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-4 h-4" />
-                            <time dateTime={post.createdAt.toString()}>
-                              {formatDate(post.createdAt)}
-                            </time>
-                          </div>
-                          <span>{getReadTime(post.content)}</span>
-                          
-                          {/* Engagement metrics */}
-                          <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-1">
-                              <Heart className="w-4 h-4" />
-                              <span className="transition-all duration-300">
-                                {post._count.likes}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Title */}
-                        <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                          <a href={`/blog/${post.id}`} className="hover:underline">
-                            {post.title}
-                          </a>
-                        </h2>
-
-                        {/* Categories */}
-                        {post.Category && post.Category.length > 0 && (
-                          <div className="flex items-center space-x-2">
-                            <Hash className="w-4 h-4 text-gray-400" />
-                            <div className="flex flex-wrap gap-1">
-                              {post.Category.map((category, index) => (
-                                <button
-                                  key={index}
-                                  disabled
-                                  className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition-colors cursor-pointer capitalize"
-                                >
-                                  {category}
-                                </button>
-                              ))}
+                      <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Image Section */}
+                        {post.image && (
+                          <div className="lg:w-80 lg:flex-shrink-0">
+                            <div className="relative h-48 lg:h-40 w-full rounded-lg overflow-hidden bg-gray-100">
+                              <img 
+                                src={post.image} 
+                                alt={post.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  (target.parentNode as HTMLElement | null)?.classList.add('bg-gray-200');
+                                }}
+                              />
                             </div>
                           </div>
                         )}
 
-                        {/* Publication Status */}
-                        <div className="flex items-center justify-between pt-2">
-                          <div className="flex items-center space-x-2">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium transition-colors ${
-                              post.published === 'true'
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {post.published ? 'Published' : 'Under Review'}
-                            </span>
+                        {/* Content Section */}
+                        <div className="flex-1 space-y-4">
+                          {/* Meta information */}
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="w-4 h-4" />
+                              <time dateTime={post.createdAt.toString()}>
+                                {formatDate(post.createdAt)}
+                              </time>
+                            </div>
+                            <span>{getReadTime(post.content)}</span>
+                            
+                            {/* Engagement metrics */}
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center space-x-1">
+                                <Heart className="w-4 h-4" />
+                                <span className="transition-all duration-300">
+                                  {post._count.likes}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          
-                          {/* Read more link */}
-                          <a 
-                            href={`/blog/${post.id}`}
-                            className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors group-hover:underline"
-                          >
-                            Read more
-                            <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                          </a>
-                        </div>
-                      </div>
+
+                          {/* Category */}
+                          {post.category && (
+                            <div className="flex items-center space-x-2">
+                              <Tag className="w-4 h-4 text-blue-500" />
+                              <span className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                                {post.category.name}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Title */}
+                          <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                            <a href={`/blog/${post.id}`} className="hover:underline">
+                              {post.title}
+                            </a>
+                          </h2>
+
+                          {/* Summary */}
+                          {post.summary && (
+                            <p className="text-gray-600 text-base leading-relaxed line-clamp-3">
+                              {post.summary}
+                            </p>
+                          )}
+                          </div>
+                          </div>
+
+                          {/* Publication Status and Read More */}
+                          <div className="flex items-center justify-between pt-2 my-2">
+                            <div className="flex items-center space-x-2">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                                post.published === 'true'
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {post.published === 'true' ? 'Published' : 'Under Review'}
+                              </span>
+                            </div>
+                              
+                              {/* Tags */}
+                          {post.tags && post.tags.length > 0 && (
+                            <div className="flex items-center space-x-2">
+                              <Hash className="w-4 h-4 text-gray-400" />
+                              <div className="flex flex-wrap gap-2">
+                                {post.tags.map((tag, index) => (
+                                  <button
+                                    key={index}
+                                    disabled
+                                    className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200 transition-colors cursor-pointer capitalize"
+                                  >
+                                    {tag}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                            {/* Read more link */}
+                            <a 
+                              href={`/blog/${post.id}`}
+                              className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors group-hover:underline"
+                            >
+                              Read more
+                              <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+                            </a>
+                          </div>
+                        
+                      
                     </article>
                   );
                 })
               )}
-              <div className="flex justify-center mt-10 space-x-2">
-  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-    <button
-      key={page}
-      onClick={() => setCurrentPage(page)}
-      className={`px-3 py-1 rounded-md text-sm font-medium border ${
-        page === currentPage
-          ? 'bg-blue-600 text-white border-blue-600'
-          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-      }`}
-    >
-      {page}
-    </button>
-  ))}
-</div>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-10 space-x-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-4 py-2 rounded-md text-sm font-medium border transition-colors ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </main>
         </div>
