@@ -7,8 +7,14 @@ import { redirect } from "next/navigation";
 
 
 
+type Categories={
+  id: string;
+  name: string;
+  createdAt: Date;
+}[]
 
-export function BackgroundBeamsWithCollisionDemo() {
+
+export function BackgroundBeamsWithCollisionDemo({categories}:{categories: Categories}) {
     const [searchTerm, setSearchTerm] = useState('');
      const handleSearch = (e: any) => {
     e.preventDefault();
@@ -79,13 +85,13 @@ export function BackgroundBeamsWithCollisionDemo() {
 
         {/* Quick Category Filters */}
         <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
-          {['Hydro Power', 'Renewable Energy', 'Corporate News', 'Sustainability', 'Technology', 'Projects'].map((category) => (
+          {categories.map((category) => (
             <button
-            onClick={() => handleCategoryClick(category)}
-              key={category}
+            onClick={() => handleCategoryClick(category.name)}
+              key={category.id}
               className="px-4 py-2 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-500 hover:to-green-500 hover:text-white transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105"
             >
-              {category}
+              {category.name}
             </button>
           ))}
         </div>

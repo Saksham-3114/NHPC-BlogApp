@@ -8,7 +8,6 @@ export async function POST(
    const url = new URL(req.url);
   const postId = url.pathname.split('/').at(-2) as string;
   try {
-    // Get the current user (adjust this based on your auth implementation)
     const session = await auth()
     if (!session?.user?.name) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

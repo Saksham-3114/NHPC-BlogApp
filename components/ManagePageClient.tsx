@@ -14,7 +14,7 @@ export default function ManagePageClient() {
   const managementCards = [
     {
       id: 'review',
-      title: 'Post Management',
+      title: 'Review Blogs',
       description: 'Publish or Reject under review blogs',
       icon: MessageSquare,
       path: '/manage/review',
