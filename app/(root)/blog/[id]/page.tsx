@@ -3,6 +3,8 @@ import { auth } from '@/auth'
 import LikeButton from '@/app/(root)/component/likeButton'
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import Image from 'next/image';
+import { Tag } from 'lucide-react';
 
 export default async function Blog({ params }: { params: Promise<{ id: string }> }) {
   const blogid = (await params).id;
@@ -18,6 +20,7 @@ export default async function Blog({ params }: { params: Promise<{ id: string }>
     include: {
       author: true,
       likes: true,
+      category:true,
       _count: {
         select: {
           likes: true
@@ -28,7 +31,7 @@ export default async function Blog({ params }: { params: Promise<{ id: string }>
 
   if (!blog) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center ">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Blog Not Found</h1>
           <p className="text-gray-600">The blog post you&apos;re looking for doesn&apos;t exist.</p>
@@ -37,7 +40,7 @@ export default async function Blog({ params }: { params: Promise<{ id: string }>
     )
   }
 
-  const categories = blog.Category;
+  const tags = blog.tags;
   const date = new Date(blog.createdAt);
   const formattedDate = date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -53,29 +56,46 @@ export default async function Blog({ params }: { params: Promise<{ id: string }>
   const likeCount = blog._count.likes;
 
   return (
-    <div className="min-h-screen bg-white ">
+    <div className="min-h-screen bg-white my-10">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header Section */}
         <header className="mb-12">
           <div className="text-sm text-gray-500 mb-4">
             Created on {formattedDate}
           </div>
+
+          <div className="mx-auto py-10 flex items-center justify-end gap-6">
+            <Image
+              height={200}
+              width={200}
+              alt='Feature Image'
+              src={blog.image}
+            />
+          
           
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
             {blog.title}
           </h1>
+          </div>
 
-          {/* Categories */}
-          {categories && categories.length > 0 && (
+          <div className="flex items-center space-x-2 mb-6">
+            <Tag className="w-4 h-4 text-blue-500" />
+            <div className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors">
+              {blog.category.name}
+            </div>
+          </div>
+
+          {/* tags */}
+          {tags && tags.length > 0 && (
             <div className="mb-8">
               <h2 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-                Categories
+                tags
               </h2>
               <div className="flex flex-wrap gap-2">
-                {categories.map((category, index) => (
+                {tags.map((category, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 transition-colors"
                   >
                     {category}
                   </span>
@@ -87,9 +107,13 @@ export default async function Blog({ params }: { params: Promise<{ id: string }>
           {/* Author Info */}
           <div className="flex items-center space-x-4 pb-8 border-b border-gray-200">
             <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-gray-600 font-medium text-sm">
-                {blog.title.charAt(0).toUpperCase()}
-              </span>
+              <Image
+                src={blog.author.image}
+                height={500}
+                width={500}
+                alt="Profile pic"
+                className='rounded-full'
+              />
             </div>
             <div>
               <div className="text-sm font-medium text-gray-900">

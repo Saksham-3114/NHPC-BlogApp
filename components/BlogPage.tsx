@@ -269,7 +269,7 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
                           </div>
                         </div>
 
-                        {/* Category */}
+                        {/* Category */} 
                         {post.category && (
                           <div className="flex items-center space-x-2">
                             <Tag className="w-4 h-4 text-blue-500" />

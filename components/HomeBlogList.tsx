@@ -288,9 +288,9 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
                           )}
                           </div>
                           </div>
-
+                          
                           {/* Publication Status and Read More */}
-                          <div className="flex items-center justify-between pt-2 my-2">
+                          <div className="flex items-center justify-between pt-2">
                             <div className="flex items-center space-x-2">
                               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                                 post.published === 'true'

@@ -68,8 +68,14 @@ export default async function UserBlog({params}:{params:Promise<{u:string}>}) {
           postId: true,
           authorId: true,
           createdAt: true
-        }
+        },
       },
+      category:{
+        select:{
+          id: true,
+          name:true
+        }
+      }
     },
     orderBy: {
       createdAt: 'desc'

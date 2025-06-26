@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
-import React, { useState, useMemo } from 'react';
-import { Search, Calendar, User, ArrowRight, Hash, Heart } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Calendar, User, ArrowRight, Hash, Heart, Tag } from 'lucide-react';
 
 interface User {
   id: string;
@@ -9,7 +10,7 @@ interface User {
   name: string;
   role: 'user' | 'admin';
   createdAt: Date | string;
-  bio: string | null;
+  bio: string;
 }
 
 interface Like {
@@ -21,13 +22,12 @@ interface Like {
   author?: User;
 }
 
-
 interface Categories{
   id: string;
   name: string;
 }
 
-export interface Post {
+interface Post {
   id: string;
   title: string;
   summary: string | null;
@@ -43,42 +43,76 @@ export interface Post {
 }
 
 interface BlogPageProps {
-  posts: Post[];
+  posts: Post[]; 
 }
 
-const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
+const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
   const [posts] = useState(initialPosts);
-  const [selectedtags, setSelectedtags] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
- 
+   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const search = urlParams.get('search');
+      if (search) {
+        setSearchTerm(search);
+      }
+      const category = urlParams.get('category');
+      if(category){
+        setSelectedCategory(category);
+      }
+    }
+  }, []);
+
+  // Reset to page 1 when search term or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
+  // Get unique categories from posts instead of tags
   const categories = useMemo(() => {
-    const allCategories = posts.flatMap(post => post.tags || []);
-    const uniqueCategories = [...new Set(allCategories)].filter(Boolean);
-    return ['All', ...uniqueCategories.sort()];
+    const allCategories = posts
+      .map(post => post.category?.name)
+      .filter(Boolean) as string[];
+    const uniqueCategories = [...new Set(allCategories)].sort();
+    return ['All', ...uniqueCategories];
   }, [posts]);
 
   const filteredPosts = useMemo(() => { 
     return posts.filter(post => {
-      const matchestags = selectedtags === 'All' || 
-                             (post.tags && post.tags.includes(selectedtags));
+      // Filter by category
+      const matchesCategory = selectedCategory === 'All' || 
+                             post.category?.name === selectedCategory;
       
       // Filter by search term
       const matchesSearch = searchTerm === '' || 
                            post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (post.tags && post.tags.some(cat => 
-                             cat.toLowerCase().includes(searchTerm.toLowerCase())
+                           post.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           post.category?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (post.tags && post.tags.some(tag => 
+                             tag.toLowerCase().includes(searchTerm.toLowerCase())
                            )) ||
                            post.author?.name?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      return matchestags && matchesSearch;
+      return matchesCategory && matchesSearch;
     });
-  }, [posts, selectedtags, searchTerm]);
+  }, [posts, selectedCategory, searchTerm]);
 
-  const gettagsCount = (tags: string): number => {
-    if (tags === 'All') return posts.length;
-    return posts.filter(post => post.tags && post.tags.includes(tags)).length;
+  const postsPerPage = 6;
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+  const paginatedPosts = useMemo(() => {
+    const start = (currentPage - 1) * postsPerPage;
+    const end = start + postsPerPage;
+    return filteredPosts.slice(start, end);
+  }, [filteredPosts, currentPage]);
+
+  const getCategoryCount = (category: string): number => {
+    if (category === 'All') return posts.length;
+    return posts.filter(post => post.category?.name === category).length;
   };
 
   const formatDate = (dateString: Date | string): string => {
@@ -98,13 +132,10 @@ const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => 
     return `${readTime} min read`;
   };
 
-  
-
   const getLikeCount = (likes?: Like[]): number => {
     if (!likes || !Array.isArray(likes)) return 0;
-    return likes.filter(like => like.liked===false).length;
+    return likes.filter(like => like.liked === true).length;
   };
-
 
   return (
     <div className="min-h-screen bg-white mt-16">
@@ -114,9 +145,10 @@ const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-8">
             <div>
               <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Blogs by {posts[0].author?.name}</h1>
-              <p className="mt-2 text-lg text-gray-600">
-                About Author: {posts[0].author?.bio}
-              </p>
+              <div className='flex items-center'>
+                <h3 className="text-2xl  text-gray-900">About Author&nbsp;:&nbsp;</h3>
+                <p className="mt-2 text-lg text-gray-600"> {posts[0].author?.bio}</p>
+              </div>
             </div>
             <div className="mt-6 sm:mt-0">
               <div className="relative">
@@ -143,25 +175,25 @@ const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => 
                 Categories
               </h2>
               <nav className="space-y-1">
-                {categories.map((tags) => (
+                {categories.map((category) => (
                   <button
-                    key={tags}
-                    onClick={() => setSelectedtags(tags)}
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
                     className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between group ${
-                      selectedtags === tags
-                        ? 'bg-gray-100 text-gray-900 font-medium'
+                      selectedCategory === category
+                        ? 'bg-blue-100 text-blue-900 font-medium'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     <span className="capitalize">
-                      {tags === 'All' ? 'All Posts' : tags}
+                      {category === 'All' ? 'All Posts' : category}
                     </span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      selectedtags === tags
-                        ? 'bg-gray-200 text-gray-700'
+                      selectedCategory === category
+                        ? 'bg-blue-200 text-blue-800'
                         : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200'
                     }`}>
-                      {gettagsCount(tags)}
+                      {getCategoryCount(category)}
                     </span>
                   </button>
                 ))}
@@ -180,8 +212,8 @@ const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => 
               )}
               <p className="text-sm text-gray-500">
                 {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found
-                {selectedtags !== 'All' && (
-                  <span> in {selectedtags}</span>
+                {selectedCategory !== 'All' && (
+                  <span> in {selectedCategory}</span>
                 )}
               </p>
             </div>
@@ -189,88 +221,146 @@ const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => 
             {/* Posts List */}
             {filteredPosts.length > 0 ? (
               <div className="space-y-8">
-                {filteredPosts.map((post) => (
-                  <article key={post.id} className="group border-b border-gray-500 pb-5">
-                    <div className="flex flex-col space-y-3">
-                      {/* Meta information */}
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-4 h-4" />
-                          <time dateTime={post.createdAt.toString()}>
-                            {formatDate(post.createdAt)}
-                          </time>
-                        </div>
-                        {post.author && (
-                          <div className="flex items-center space-x-1">
-                            <User className="w-4 h-4" />
-                            <span>{post.author.name}</span>
-                          </div>
-                        )}
-                        <span>{getReadTime(post.content)}</span>
-                        
-                        {/* Engagement metrics */}
-                        <div className="flex items-center space-x-3">
-                          {post.likes && (
-                            <div className="flex items-center space-x-1">
-                              <Heart className="w-4 h-4" />
-                              <span>{getLikeCount(post.likes)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Title */}
-                      <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                        <a href={`/blog/${post.id}`} className="hover:underline">
-                          {post.title}
-                        </a>
-                      </h2>
-
-                      {/* Content Preview */}
-                      
-
-                      {/* Categories */}
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="flex items-center space-x-2">
-                          <Hash className="w-4 h-4 text-gray-400" />
-                          <div className="flex flex-wrap gap-1">
-                            {post.tags.map((tags, index) => (
-                              <button
-                                key={index}
-                                onClick={() => setSelectedtags(tags)}
-                                className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition-colors cursor-pointer capitalize"
-                              >
-                                {tags}
-                              </button>
-                            ))}
+                {paginatedPosts.map((post) => (
+                  <article key={post.id} className="group border-b border-gray-500 pb-8 transition-all duration-300">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      {/* Image Section */}
+                      {post.image && (
+                        <div className="lg:w-80 lg:flex-shrink-0">
+                          <div className="relative h-48 lg:h-40 w-full rounded-lg overflow-hidden bg-gray-100">
+                            <img 
+                              src={post.image} 
+                              alt={post.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              // onError={(e) => {
+                              //   const target = e.target as HTMLImageElement;
+                              //   target.style.display = 'none';
+                              //   target.parentNode?.classList.add('bg-gray-200');
+                              // }}
+                            />
                           </div>
                         </div>
                       )}
 
-                      {/* Publication Status */}
-                      <div className="flex items-center justify-between pt-2">
-                        <div className="flex items-center space-x-2">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            post.published === 'true'
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {post.published ? 'Published' : 'Draft'}
-                          </span>
+                      {/* Content Section */}
+                      <div className="flex-1 space-y-4">
+                        {/* Meta information */}
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-4 h-4" />
+                            <time dateTime={post.createdAt.toString()}>
+                              {formatDate(post.createdAt)}
+                            </time>
+                          </div>
+                          {post.author && (
+                            <div className="flex items-center space-x-1">
+                              <User className="w-4 h-4" />
+                              <span>{post.author.name}</span>
+                            </div>
+                          )}
+                          <span>{getReadTime(post.content)}</span>
+                          
+                          {/* Engagement metrics */}
+                          <div className="flex items-center space-x-3">
+                            {post.likes && (
+                              <div className="flex items-center space-x-1">
+                                <Heart className="w-4 h-4" />
+                                <span>{getLikeCount(post.likes)}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        
-                        {/* Read more link */}
-                        <a 
-                          href={`/blog/${post.id}`}
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors group-hover:underline"
-                        >
-                          Read more
-                          <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                        </a>
-                      </div>
+
+                        {/* Category */} 
+                        {post.category && (
+                          <div className="flex items-center space-x-2">
+                            <Tag className="w-4 h-4 text-blue-500" />
+                            <button
+                              onClick={() => setSelectedCategory(post.category!.name)}
+                              className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
+                            >
+                              {post.category.name}
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Title */}
+                        <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          <a href={`/blog/${post.id}`} className="hover:underline">
+                            {post.title}
+                          </a>
+                        </h2>
+
+                        {/* Summary */}
+                        {post.summary && (
+                          <p className="text-gray-600 text-base leading-relaxed line-clamp-3">
+                            {post.summary}
+                          </p>
+                        )}
+                        </div>
                     </div>
+                        
+
+                        {/* Publication Status and Read More */}
+                        <div className="flex items-center justify-between pt-2 my-2">
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                              post.published === 'true'
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {post.published === 'true' ? 'Published' : 'Draft'}
+                            </span>
+                          </div>
+
+                          {/* Tags */}
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="flex items-center space-x-2">
+                            <Hash className="w-4 h-4 text-gray-400" />
+                            <div className="flex flex-wrap gap-2">
+                              {post.tags.map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md capitalize"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                          
+                          {/* Read more link */}
+                          <a 
+                            href={`/blog/${post.id}`}
+                            className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors group-hover:underline"
+                          >
+                            Read more
+                            <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+                          </a>
+                        </div>
+                      
                   </article>
                 ))}
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-10 space-x-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-4 py-2 rounded-md text-sm font-medium border transition-colors ${
+                          page === currentPage
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-16">
@@ -286,16 +376,16 @@ const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => 
                     </>
                   ) : (
                     <>
-                      No posts are available in this tags yet. 
+                      No posts are available in this category yet. 
                       Check back later for new content.
                     </>
                   )}
                 </p>
-                {(searchTerm || selectedtags !== 'All') && (
+                {(searchTerm || selectedCategory !== 'All') && (
                   <button
                     onClick={() => {
                       setSearchTerm('');
-                      setSelectedtags('All');
+                      setSelectedCategory('All');
                     }}
                     className="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                   >
@@ -311,4 +401,4 @@ const UserBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => 
   );
 };
 
-export default UserBlogList;
+export default BlogPage;

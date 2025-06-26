@@ -55,7 +55,7 @@ export default async function Home() {
         Recent Blogs <br />
       </h1>
     </div>
-      <div className="relative -z-10 min-h-screen flex justify-center flex-wrap overflow-auto">
+      <div className="relative z-10 min-h-screen flex justify-center flex-wrap overflow-auto">
           <HomeBlogList posts={posts}/>
       </div>
     </>
