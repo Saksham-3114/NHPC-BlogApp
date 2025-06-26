@@ -70,6 +70,12 @@ export default async function Blog() {
           createdAt: true
         }
       },
+      category: {
+        select:{
+          id: true,
+          name: true
+        }
+      }
     },
     orderBy: {
       createdAt: 'desc'

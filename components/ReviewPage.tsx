@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
-import React, { useState, useMemo,} from 'react';
-import { Search, Calendar, User, Hash, Heart, X, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Calendar, User, Hash, Heart, X, CheckCircle, AlertCircle, Tag } from 'lucide-react';
 import { Button } from './ui/button';
 import { ReviewBlog } from '@/app/actions/reviewActions';
 
@@ -54,35 +55,61 @@ interface Toast {
 
 const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
   const [posts, setPosts] = useState(initialPosts);
-  const [selectedtags, setSelectedtags] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const search = urlParams.get('search');
+      if (search) {
+        setSearchTerm(search);
+      }
+      const category = urlParams.get('category');
+      if(category){
+        setSelectedCategory(category);
+      }
+    }
+  }, []);
+
+  // Reset to page 1 when search term or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
+  // Get unique categories from posts instead of tags
   const categories = useMemo(() => {
-    const allCategories = posts.flatMap(post => post.tags || []);
-    const uniqueCategories = [...new Set(allCategories)].filter(Boolean);
-    return ['All', ...uniqueCategories.sort()];
+    const allCategories = posts
+      .map(post => post.category?.name)
+      .filter(Boolean) as string[];
+    const uniqueCategories = [...new Set(allCategories)].sort();
+    return ['All', ...uniqueCategories];
   }, [posts]);
 
   const filteredPosts = useMemo(() => { 
     return posts.filter(post => {
-      const matchestags = selectedtags === 'All' || 
-                             (post.tags && post.tags.includes(selectedtags));
+      // Filter by category
+      const matchesCategory = selectedCategory === 'All' || 
+                             post.category?.name === selectedCategory;
       
+      // Filter by search term
       const matchesSearch = searchTerm === '' || 
                            post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            post.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (post.tags && post.tags.some(cat => 
-                             cat.toLowerCase().includes(searchTerm.toLowerCase())
+                           post.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           post.category?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (post.tags && post.tags.some(tag => 
+                             tag.toLowerCase().includes(searchTerm.toLowerCase())
                            )) ||
                            post.author?.name?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      return matchestags && matchesSearch;
+      return matchesCategory && matchesSearch;
     });
-  }, [posts, selectedtags, searchTerm]);
+  }, [posts, selectedCategory, searchTerm]);
 
-  const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
@@ -139,9 +166,9 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
     }
   };
 
-  const gettagsCount = (tags: string): number => {
-    if (tags === 'All') return posts.length;
-    return posts.filter(post => post.tags && post.tags.includes(tags)).length;
+  const getCategoryCount = (category: string): number => {
+    if (category === 'All') return posts.length;
+    return posts.filter(post => post.category?.name === category).length;
   };
 
   const formatDate = (dateString: Date | string): string => {
@@ -163,7 +190,7 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
 
   const getLikeCount = (likes?: Like[]): number => {
     if (!likes || !Array.isArray(likes)) return 0;
-    return likes.filter(like => like.liked === false).length;
+    return likes.filter(like => like.liked === true).length;
   };
 
   // Toast Component
@@ -243,25 +270,25 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
                 Categories
               </h2>
               <nav className="space-y-1">
-                {categories.map((tags) => (
+                {categories.map((category) => (
                   <button
-                    key={tags}
-                    onClick={() => setSelectedtags(tags)}
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
                     className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between group ${
-                      selectedtags === tags
-                        ? 'bg-gray-100 text-gray-900 font-medium'
+                      selectedCategory === category
+                        ? 'bg-blue-100 text-blue-900 font-medium'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
                     <span className="capitalize">
-                      {tags === 'All' ? 'All Posts' : tags}
+                      {category === 'All' ? 'All Posts' : category}
                     </span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      selectedtags === tags
-                        ? 'bg-gray-200 text-gray-700'
+                      selectedCategory === category
+                        ? 'bg-blue-200 text-blue-800'
                         : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200'
                     }`}>
-                      {gettagsCount(tags)}
+                      {getCategoryCount(category)}
                     </span>
                   </button>
                 ))}
@@ -280,8 +307,8 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
               )}
               <p className="text-sm text-gray-500">
                 {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found
-                {selectedtags !== 'All' && (
-                  <span> in {selectedtags}</span>
+                {selectedCategory !== 'All' && (
+                  <span> in {selectedCategory}</span>
                 )}
               </p>
             </div>
@@ -290,113 +317,150 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
             {filteredPosts.length > 0 ? (
               <div className="space-y-8">
                 {paginatedPosts.map((post) => (
-                  <article key={post.id} className="group border-b border-gray-500 pb-5">
-                    <div className="flex flex-col space-y-3">
-                      {/* Meta information */}
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-4 h-4" />
-                          <time dateTime={post.createdAt.toString()}>
-                            {formatDate(post.createdAt)}
-                          </time>
-                        </div>
-                        {post.author && (
-                          <div className="flex items-center space-x-1">
-                            <User className="w-4 h-4" />
-                            <span>{post.author.name}</span>
-                          </div>
-                        )}
-                        <span>{getReadTime(post.content)}</span>
-                        
-                        {/* Engagement metrics */}
-                        <div className="flex items-center space-x-3">
-                          {post.likes && (
-                            <div className="flex items-center space-x-1">
-                              <Heart className="w-4 h-4" />
-                              <span>{getLikeCount(post.likes)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Title */}
-                      <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                        <a href={`/blog/${post.id}`} className="hover:underline">
-                          {post.title}
-                        </a>
-                      </h2>
-
-                      {/* Categories */}
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="flex items-center space-x-2">
-                          <Hash className="w-4 h-4 text-gray-400" />
-                          <div className="flex flex-wrap gap-1">
-                            {post.tags.map((tags, index) => (
-                              <button
-                                key={index}
-                                onClick={() => setSelectedtags(tags)}
-                                className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition-colors cursor-pointer capitalize"
-                              >
-                                {tags}
-                              </button>
-                            ))}
+                  <article key={post.id} className="group border-b border-gray-500 pb-8 transition-all duration-300">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      {/* Image Section */}
+                      {post.image && (
+                        <div className="lg:w-80 lg:flex-shrink-0">
+                          <div className="relative h-48 lg:h-40 w-full rounded-lg overflow-hidden bg-gray-100">
+                            <img 
+                              src={post.image} 
+                              alt={post.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
                           </div>
                         </div>
                       )}
 
-                      {/* Publication Status */}
-                      <div className="flex items-center justify-between pt-2">
-                        <div className="flex items-center space-x-2">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            post.published === 'true'
-                                ? 'bg-green-100 text-green-800' 
-                                : post.published === 'false' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {post.published === 'true'
-                                ? 'Published' 
-                                : post.published === 'false' ? 'Under Review' : 'Rejected'
-                            }
-                          </span>
+                      {/* Content Section */}
+                      <div className="flex-1 space-y-4">
+                        {/* Meta information */}
+                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-4 h-4" />
+                            <time dateTime={post.createdAt.toString()}>
+                              {formatDate(post.createdAt)}
+                            </time>
+                          </div>
+                          {post.author && (
+                            <div className="flex items-center space-x-1">
+                              <User className="w-4 h-4" />
+                              <span>{post.author.name}</span>
+                            </div>
+                          )}
+                          <span>{getReadTime(post.content)}</span>
+                          
+                          {/* Engagement metrics */}
+                          <div className="flex items-center space-x-3">
+                            {post.likes && (
+                              <div className="flex items-center space-x-1">
+                                <Heart className="w-4 h-4" />
+                                <span>{getLikeCount(post.likes)}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
+
+                        {/* Category */} 
+                        {post.category && (
+                          <div className="flex items-center space-x-2">
+                            <Tag className="w-4 h-4 text-blue-500" />
+                            <button
+                              onClick={() => setSelectedCategory(post.category!.name)}
+                              className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
+                            >
+                              {post.category.name}
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Title */}
+                        <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          <a href={`/blog/${post.id}`} className="hover:underline">
+                            {post.title}
+                          </a>
+                        </h2>
+
+                        {/* Summary */}
+                        {post.summary && (
+                          <p className="text-gray-600 text-base leading-relaxed line-clamp-3">
+                            {post.summary}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                         
-                        {/* Action buttons */}
-                        <div className='flex gap-4 mx-6'>
-                          <Button 
-                            onClick={() => handleReviewAction(post.id, 'publish')}
-                            disabled={isLoading === post.id || post.published === 'true'}
-                            className='bg-green-300 text-green-700 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed'
-                          >
-                            {isLoading === post.id ? 'Processing...' : 'Publish'}
-                          </Button>
-                          <Button 
-                            onClick={() => handleReviewAction(post.id, 'reject')}
-                            disabled={isLoading === post.id || post.published === 'reject'}
-                            className='bg-red-300 text-red-700 hover:bg-red-400 disabled:opacity-50 disabled:cursor-not-allowed'
-                          >
-                            {isLoading === post.id ? 'Processing...' : 'Reject'}
-                          </Button>
-                        </div>
+                    {/* Publication Status, Tags, and Action Buttons */}
+                    <div className="flex items-center justify-between pt-2 my-2">
+                      <div className="flex items-center space-x-4">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                          post.published === 'true'
+                            ? 'bg-green-100 text-green-800' 
+                            : post.published === 'false' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {post.published === 'true'
+                            ? 'Published' 
+                            : post.published === 'false' ? 'Under Review' : 'Rejected'
+                          }
+                        </span>
+
+                        {/* Tags */}
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="flex items-center space-x-2">
+                            <Hash className="w-4 h-4 text-gray-400" />
+                            <div className="flex flex-wrap gap-2">
+                              {post.tags.map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md capitalize"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Action buttons */}
+                      <div className='flex gap-3'>
+                        <Button 
+                          onClick={() => handleReviewAction(post.id, 'publish')}
+                          disabled={isLoading === post.id || post.published === 'true'}
+                          className='bg-green-300 text-green-700 hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed'
+                        >
+                          {isLoading === post.id ? 'Processing...' : 'Publish'}
+                        </Button>
+                        <Button 
+                          onClick={() => handleReviewAction(post.id, 'reject')}
+                          disabled={isLoading === post.id || post.published === 'reject'}
+                          className='bg-red-300 text-red-700 hover:bg-red-400 disabled:opacity-50 disabled:cursor-not-allowed'
+                        >
+                          {isLoading === post.id ? 'Processing...' : 'Reject'}
+                        </Button>
                       </div>
                     </div>
                   </article>
                 ))}
                 
                 {/* Pagination */}
-                <div className="flex justify-center mt-10 space-x-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 rounded-md text-sm font-medium border ${
-                        page === currentPage
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-10 space-x-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-4 py-2 rounded-md text-sm font-medium border transition-colors ${
+                          page === currentPage
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-16">
@@ -404,6 +468,30 @@ const ReviewPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
                   <Search className="w-16 h-16 mx-auto" />
                 </div>
                 <h3 className="text-xl font-medium text-gray-900 mb-2">No posts found to review</h3>
+                <p className="text-gray-500 max-w-md mx-auto">
+                  {searchTerm ? (
+                    <>
+                      No posts match your search for {searchTerm}. 
+                      Try different keywords or browse all posts.
+                    </>
+                  ) : (
+                    <>
+                      No posts are available in this category yet. 
+                      Check back later for new content.
+                    </>
+                  )}
+                </p>
+                {(searchTerm || selectedCategory !== 'All') && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedCategory('All');
+                    }}
+                    className="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    View all posts
+                  </button>
+                )}
               </div>
             )}
           </main>
