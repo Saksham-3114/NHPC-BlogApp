@@ -43,6 +43,21 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
+   useEffect(() => {
+    // Only run on client-side
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const search = urlParams.get('search');
+      if (search) {
+        setSearchTerm(search);
+      }
+      const category = urlParams.get('category');
+      if(category){
+        setSelectedCategory(category);
+      }
+    }
+  }, []);
+
   // Reset to page 1 when search term or category changes
   useEffect(() => {
     setCurrentPage(1);

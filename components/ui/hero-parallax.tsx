@@ -26,7 +26,7 @@ type Posts=({
 
 
 export const HeroParallax = ({
-  products, posts
+  products, posts 
 }: {
   products: {
     title: string;

@@ -35,7 +35,7 @@ export function NavbarDemo() {
       : []
     ),
     // Only add Review link if user is admin
-    ...(status === "authenticated" && isAdmin ? [{ name: "Review", link: "/review" }] : []),
+    ...(status === "authenticated" && isAdmin ? [{ name: "Manage", link: "/manage" }] : []),
   ];
 
   // Reset admin state immediately when session becomes unauthenticated
