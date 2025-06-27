@@ -37,7 +37,8 @@ export default function LikeButton({
         })
 
         if (!response.ok) {
-            toast.error('Failed to Like')
+          const err=await response.json();
+            toast.error(`${err.error}`)
           throw new Error('Failed to update like')
         }
 

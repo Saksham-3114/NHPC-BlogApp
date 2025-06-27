@@ -23,6 +23,16 @@ export async function POST(
     })
     const authorId=user?.id as string
 
+    const postPublished = await db.post.findUnique({
+      where:{
+        id: postId
+      }
+    })
+    const isPublished = postPublished?.published as string
+    if(isPublished==='false'){
+      return NextResponse.json({error:"Publish post first"},{status:401})
+    }
+
     // Check if user already liked this post
     const existingLike = await db.like.findUnique({
       where: {

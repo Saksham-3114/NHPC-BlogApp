@@ -6,12 +6,13 @@ import { redirect } from 'next/navigation'
 
 export async function createBlogAction(data: {
   title: string
-  categories: string[]
+  category: string
+  summary: string
   content: string
+  tags: string[]
+  featureImage: string
   username: string
 }) {
-  // TODO: validate the data
-
   let post;
 
   try {
@@ -22,10 +23,13 @@ export async function createBlogAction(data: {
     post = await db.post.create({
       data: {
         title: data.title,
-        Category: data.categories,
+        categoryId: data.category,
+        summary: data.summary,
         content: data.content,
         published: 'false',
-        authorId: user?.id
+        authorId: user?.id,
+        image: data.featureImage,
+        tags: data.tags
       }
     })
 

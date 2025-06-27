@@ -64,18 +64,22 @@ export default async function Blog({ params }: { params: Promise<{ id: string }>
             Created on {formattedDate}
           </div>
 
-          <div className="mx-auto py-10 flex items-center justify-end gap-6">
+          <div className="mx-auto py-10 flex items-center gap-6">
+            <div className='h-[200px] w-[350px] rounded-2xl overflow-hidden relative'>
             <Image
               height={200}
               width={200}
               alt='Feature Image'
               src={blog.image}
+              className='absolute inset-0 w-full h-full object-cover'
             />
+            </div>
           
           
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
             {blog.title}
           </h1>
+          <div></div>
           </div>
 
           <div className="flex items-center space-x-2 mb-6">

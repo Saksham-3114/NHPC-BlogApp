@@ -1,6 +1,7 @@
 
 import { auth } from '@/auth';
 import ContentForm from '@/components/content-form'
+import { db } from '@/lib/db';
 import { redirect } from 'next/navigation';
 
 export default async function WritePage({params}: {params:Promise<{username:string}>}){
@@ -8,15 +9,22 @@ export default async function WritePage({params}: {params:Promise<{username:stri
   if(!session?.user){
     redirect("/login")
   }
+
+  const categories= await db.categories.findMany({
+    select:{
+      id: true,
+      name: true
+    }
+  });
+
+
   const username = (await params).username;
   if(!username) redirect("/");
     if(session.user.name!=username) redirect("/");
     return (
     <section className='py-7'>
-      <div className='container  mx-auto p-10 w-fit rounded-xl flex flex-col items-center'>
-        <h1 className='text-3xl font-bold'>Write a blog</h1>
-
-        <ContentForm username={username}/>
+      <div className='container  mx-auto p-10 w-fit rounded-xl'>
+        <ContentForm username={username} categories={categories}/>
       </div>
     </section>
   )
