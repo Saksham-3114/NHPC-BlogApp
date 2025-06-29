@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
 import ResetPasswordForm from '@/components/form/ResetPasswordForm';
 
-function ResetPasswordContent({ searchParams }: { searchParams: { token?: string } }) {
-  const token = searchParams.token;
+async function ResetPasswordContent({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
+  const resolvedSearchParams = await searchParams;
+  const token = resolvedSearchParams.token;
 
   if (!token) {
     return (
@@ -15,9 +16,9 @@ function ResetPasswordContent({ searchParams }: { searchParams: { token?: string
   return <ResetPasswordForm token={token} />;
 }
 
-export default function ResetPasswordPage({ searchParams }: { searchParams: { token?: string } }) {
+export default function ResetPasswordPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
   return (
-    <div className=" flex flex-col justify-center">
+    <div className="flex flex-col justify-center">
       <Suspense fallback={<div>Loading...</div>}>
         <ResetPasswordContent searchParams={searchParams} />
       </Suspense>
