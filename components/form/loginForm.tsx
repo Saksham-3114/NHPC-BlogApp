@@ -92,6 +92,10 @@ export default function LoginForm(){
         or
       </div>
       {/* <GoogleSignInButton>Login with Google</GoogleSignInButton> */}
+      
+      <p className="text-center text-sm text-gray-600 mt-2">
+        <Link href="/forgot-password" className="text-sm text-blue-500 hover:text-blue-600 text-center">Forgot your password?</Link>
+      </p>
       <p className="text-center text-sm text-gray-600 mt-2">
         If you don&apos;t have an account, please&nbsp;
         <Link href="/register" className="text-blue-500 hover:underline">Register</Link> 

@@ -20,6 +20,7 @@ model User {
   createdAt DateTime  @default(now()) @map("created_at")
   likes     Like[]
   post      Post[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -62,6 +63,15 @@ model Categories {
   posts       Post[]
 
   @@map("categories")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 enum Role { 
