@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { Calendar, ArrowRight, Hash, Heart } from 'lucide-react';
 import { Button } from './ui/button';
-import { DeleteBlogAction } from '@/app/actions/deleteBlog';
+import { DeleteBlogAction, UnpublishBlogAction } from '@/app/actions/deleteBlog';
+import { useRouter } from 'next/navigation';
 
 interface Categories{
   id: string;
@@ -33,8 +34,10 @@ interface BlogPageProps {
 }
 
 const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , deleteButton}) => {
+  const router=useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [deletingPosts, setDeletingPosts] = useState<Set<string>>(new Set());
+  const [unpublishPosts, setUnpublishPosts] = useState<Set<string>>(new Set());
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedtags, setSelectedtags] = useState('All');
 
@@ -45,6 +48,8 @@ const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , d
     });
   }, [posts, selectedtags]);
 
+
+  //handling deletion of post
   const handleDeletePost = async (postId: string) => {
         const confirmed = window.confirm('Are you sure you want to delete this post? This action cannot be undone.');
     
@@ -65,10 +70,35 @@ const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , d
       
     } catch (error) {
       console.error('Failed to delete post:', error);
-      // You might want to show an error message to the user here
     } finally {
-      // Remove from deleting state
       setDeletingPosts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
+    }
+  };
+
+  // handling unpublish of post
+  const handleUnpublishPost = async (postId: string) => {
+    const confirmed = window.confirm('Are you sure you want to unpublish this post? This post will be moved under review.');
+    if (!confirmed) {
+      return; 
+    }
+    try {
+      setUnpublishPosts(prev => new Set(prev).add(postId));
+      const formData = new FormData();
+      formData.append('postId', postId);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const result = await UnpublishBlogAction(formData);
+      // const updPost = posts.filter((post)=>{
+      //   if(post.id==postId) post.published='false' 
+      // })
+      // setPosts(updPost)
+    } catch (error) {
+      console.error('Failed to unpublish post:', error);
+    } finally {
+      setUnpublishPosts(prev => {
         const newSet = new Set(prev);
         newSet.delete(postId);
         return newSet;
@@ -104,11 +134,14 @@ const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , d
               <div className="space-y-8">
                 {filteredPosts.map((post) => {
                   const isDeleting = deletingPosts.has(post.id);
+                  const isUnpublish = unpublishPosts.has(post.id);
                   return (
                     <article 
                       key={post.id} 
                       className={`group border-b border-gray-500 pb-5 transition-opacity ${
                         isDeleting ? 'opacity-50 pointer-events-none' : ''
+                      } ${
+                        isUnpublish ? 'opacity-50 pointer-events-none' : ''
                       }`}
                     >
                       <div className="flex flex-col space-y-3">
@@ -175,7 +208,28 @@ const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , d
                           
                           {/* Read more link or Delete button */}
                           {deleteButton ? (
-                            <Button 
+                            <div className='flex gap-4'>
+                              {
+                                post.published==='true' ? 
+                                (
+                                  <Button 
+                              type="button"
+                              onClick={() => handleUnpublishPost(post.id)}
+                              disabled={isUnpublish}
+                              className="px-4 py-2 rounded-md bg-gray-950 text-white hover:bg-gray-700 transition focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isUnpublish ? 'loading...' : 'Unpublish'}
+                            </Button>
+                                ) : <div></div>
+                              }
+                              <Button 
+                              type="button"
+                              onClick={() => {router.push(`/editpage/${post.id}`)}}
+                              className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-400 transition focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {'Edit Post'}
+                            </Button>
+                              <Button 
                               type="button"
                               onClick={() => handleDeletePost(post.id)}
                               disabled={isDeleting}
@@ -183,6 +237,7 @@ const ProfileBlogList: React.FC<BlogPageProps> = ({ posts: initialPosts = [] , d
                             >
                               {isDeleting ? 'Deleting...' : 'Delete Post'}
                             </Button>
+                            </div>
                           ) : (
                             <a 
                               href={`/blog/${post.id}`}

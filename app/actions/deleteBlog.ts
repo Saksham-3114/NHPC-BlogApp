@@ -10,3 +10,17 @@ export async function DeleteBlogAction(formData: FormData){
         throw new Error("Deletion of Blog Failed")
     }
 } 
+
+export async function UnpublishBlogAction(formData: FormData){
+    const postId=await formData.get("postId") as string;
+    const res=await db.post.update({
+        where:{id: postId},
+        data: {
+            published: "false"
+        }
+    })
+    if(!res){
+        throw new Error("Cannot Unpublish")
+    }
+    return res;
+}

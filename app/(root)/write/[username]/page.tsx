@@ -23,9 +23,9 @@ export default async function WritePage({params}: {params:Promise<{username:stri
     if(session.user.name!=username) redirect("/");
     return (
     <section className='py-7'>
-      <div className='container  mx-auto p-10 w-fit rounded-xl'>
+      {/* <div className='container  mx-auto p-10 w-fit rounded-xl'> */}
         <ContentForm username={username} categories={categories}/>
-      </div>
+      {/* </div> */}
     </section>
   )
 }
