@@ -14,6 +14,9 @@ import {
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
+// Force dynamic rendering - this ensures the page is never cached
+export const dynamic = 'force-dynamic'
+
 export function NavbarDemo() {
   const { data: session, status, update } = useSession();
   const [isAdmin, setIsAdmin] = useState(false);

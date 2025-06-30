@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import { NavbarDemo } from "./component/nav";
 import Footer from "./component/footer";
-import { SessionProvider } from "next-auth/react";
-
 
 export const metadata: Metadata = {
   title: "NHPC Ltd. | Blog",
@@ -16,10 +14,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-        <div className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-4 ">
-          <SessionProvider><NavbarDemo/></SessionProvider>
-          <main className="min-h-fit overflow-hidden">{children}</main>
-          <Footer/>
-        </div>
+    <html lang="en">
+      <body>
+          <div className="min-h-screen grid grid-rows-[auto_1fr_auto] gap-4">
+            <NavbarDemo />
+            <main className="min-h-fit overflow-hidden">{children}</main>
+            <Footer />
+          </div>
+      </body>
+    </html>
   );
 }

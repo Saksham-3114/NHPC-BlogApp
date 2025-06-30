@@ -1,6 +1,8 @@
 import { db } from '@/lib/db' 
 import BlogPage from '@/components/BlogPage'
 
+// Force dynamic rendering - this ensures the page is never cached
+export const dynamic = 'force-dynamic'
 
 interface User {
   id: string;
@@ -40,57 +42,59 @@ export interface Post {
 }
 
 export default async function Blog() {
-  
-
-
-  const posts = await db.post.findMany({
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          bio: true,
-          createdAt: true
+  try {
+    const posts = await db.post.findMany({
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            bio: true,
+            createdAt: true
+          }
+        },
+        likes: {
+          select: {
+            id: true,
+            liked: true,
+            postId: true,
+            authorId: true,
+            createdAt: true
+          }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true
+          }
         }
       },
-      likes: {
-        select: {
-          id: true,
-          liked: true,
-          postId: true,
-          authorId: true,
-          createdAt: true
-        }
+      orderBy: {
+        createdAt: 'desc'
       },
-      category: {
-        select: {
-          id: true,
-          name: true
-        }
+      where: {
+        published: 'true' 
       }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    where: {
-      published: 'true' 
-    }
-  })
+    })
 
-  const serializedPosts = posts.map(post => ({
-    ...post,
-    createdAt: post.createdAt.toISOString(),
-    author: post.author ? {
-      ...post.author,
-      createdAt: post.author.createdAt.toISOString()
-    } : undefined,
-    likes: post.likes?.map(like => ({
-      ...like,
-      createdAt: like.createdAt.toISOString()
-    })),
-  }))
+    const serializedPosts = posts.map(post => ({
+      ...post,
+      createdAt: post.createdAt.toISOString(),
+      author: post.author ? {
+        ...post.author,
+        createdAt: post.author.createdAt.toISOString()
+      } : undefined,
+      likes: post.likes?.map(like => ({
+        ...like,
+        createdAt: like.createdAt.toISOString()
+      })),
+    }))
 
-  return <BlogPage posts={serializedPosts} />
+    return <BlogPage posts={serializedPosts} />
+  } catch (error) {
+    console.error('Error fetching posts:', error)
+    return <BlogPage posts={[]} />
+  }
 }
