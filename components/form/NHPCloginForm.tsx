@@ -15,22 +15,22 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
 // import GoogleSignInButton from "../ui/googleSignInButton";
-import { CredentialsLogin } from "@/app/actions";
+import { NHPCCredentialsLogin } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 const FormSchema = z.object({
-  email: z.string().min(1, "Email is required").email("Invalid email address"),
-  password: z.string().min(1, "Password is required").min(6, "Password must be at least 6 characters long"),
+  employeeId: z.string().min(1, "Employee ID is required"),
+  password: z.string().min(1, "Password is required").min(6, "Password must be at least 8 characters long"),
 });
 
 
-export default function LoginForm(){
+export default function NHPCLoginForm(){
   const router = useRouter();
     const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      email: "",
+      employeeId: "",
       password: ""
     }
   });
@@ -39,9 +39,9 @@ export default function LoginForm(){
         // console.log(values)
         try{
           const formData = new FormData();
-          formData.append("email", values.email);
+          formData.append("employeeId", values.employeeId);
           formData.append("password", values.password);
-          const response = await CredentialsLogin(formData);
+          const response = await NHPCCredentialsLogin(formData);
           if(response?.error){
             console.error("Login failed:", response.error);
             toast.error("Login failed: " + response.error);
@@ -61,12 +61,12 @@ export default function LoginForm(){
         <div className="space-y-6">
         <FormField
           control={form.control}
-          name="email"
+          name="employeeId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Employee ID</FormLabel>
               <FormControl>
-                <Input placeholder="Email" type="email" {...field} />
+                <Input placeholder="Employee ID" type="text" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -77,7 +77,7 @@ export default function LoginForm(){
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>ERP Password</FormLabel>
               <FormControl>
                 <Input placeholder="Enter your Password" type="password" {...field} />
               </FormControl>
@@ -92,7 +92,7 @@ export default function LoginForm(){
         or
       </div>
       {/* <GoogleSignInButton>Login with Google</GoogleSignInButton> */}
-      <Button className="w-full" onClick={()=>{router.push('/login/nhpclogin')}}>Login with NHPC Employee ID</Button>
+      <Button className="w-full" onClick={()=>{router.push('/login')}}>Back to Log In</Button>
       
       <p className="text-center text-sm text-gray-600 mt-2">
         <Link href="/forgot-password" className="text-sm text-blue-500 hover:text-blue-600 text-center">Forgot your password?</Link>

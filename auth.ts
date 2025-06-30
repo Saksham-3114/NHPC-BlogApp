@@ -13,6 +13,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   providers: [
     CredentialsProvider({
+        id: "email-login",
         async authorize(credentials): Promise<User | null> {
             if(credentials===null) return null;
             try{
@@ -30,7 +31,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }
                 }else{
                     throw new Error("User not found");
-                }
+                } 
+            }catch(e){
+                throw new Error("Invalid credentials", { cause: e });
+            }
+        }
+    }),
+    CredentialsProvider({
+        id: "employeeId-login",
+        async authorize(credentials): Promise<User | null> {
+            if(credentials===null) return null;
+            try{
+                const user = await db.user.findUnique({
+                    where: {employeeId: credentials?.employeeId as string},
+                });
+                if(user){
+                    const isValid = await fetch('https://apihub.nhpc.in:8443/erp-auth',{
+                        method: "POST",
+                        headers: {
+                            "Content-Type" : "application/json"
+                        },
+                        body:JSON.stringify({
+                            user: credentials.employeeId,
+                            password: credentials.password
+                        })
+                    }
+                    );
+                    if(isValid){
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        const { password, ...userWithoutPassword } = user;
+                        return userWithoutPassword as User;
+                    }else{
+                        throw new Error("Invalid password");
+                    }
+                }else{
+                    throw new Error("User not found");
+                } 
             }catch(e){
                 throw new Error("Invalid credentials", { cause: e });
             }

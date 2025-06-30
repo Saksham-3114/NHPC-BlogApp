@@ -20,8 +20,9 @@ import { toast } from "react-hot-toast";
 
 const FormSchema = z.object({
   username: z.string().min(1, "Username is required").max(20, "Username must be at most 20 characters long"),
+  employeeId: z.string().optional(),
   email: z.string().min(1, "Email is required").email("Invalid email address"),
-  password: z.string().min(1, "Password is required").min(8, "Password must be at least 8 characters long"),
+  password: z.string().min(1, "Password is required").min(6, "Password must be at least 8 characters long"),
   confirmPassword: z.string().min(1, "Password Confirmation is required")
 }).refine((data) => data.password === data.confirmPassword, { path: ["confirmPassword"], message: "Passwords do not match"});
 
@@ -32,6 +33,7 @@ export default function RegisterForm(){
     resolver: zodResolver(FormSchema),
     defaultValues: {
       username: "",
+      employeeId: "",
       email: "",
       password: "",
       confirmPassword: ""
@@ -46,6 +48,7 @@ export default function RegisterForm(){
           },
           body: JSON.stringify({
             username: values.username,
+            employeeId: values.employeeId,
             email: values.email,
             password: values.password
           })
@@ -70,6 +73,19 @@ export default function RegisterForm(){
               <FormLabel>Username</FormLabel>
               <FormControl>
                 <Input placeholder="Username" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="employeeId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Employee ID</FormLabel>
+              <FormControl>
+                <Input placeholder="Employee ID (Optional)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

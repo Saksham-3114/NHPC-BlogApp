@@ -7,8 +7,9 @@ import * as z from "zod";
 // Define schema for user registration
 const userSchema = z.object({
   username: z.string().min(1, "Username is required").max(20, "Username must be at most 20 characters long"),
+  employeeId: z.string().optional(),
   email: z.string().min(1, "Email is required").email("Invalid email address"),
-  password: z.string().min(1, "Password is required").min(8, "Password must be at least 8 characters long")
+  password: z.string().min(1, "Password is required").min(6, "Password must be at least 8 characters long")
 })
 
 export async function OPTIONS() {
@@ -22,7 +23,7 @@ export async function OPTIONS() {
 export async function POST(req:Request){
     try{
         const body=await req.json();
-        const {username,email,password}=userSchema.parse(body);
+        const {username,employeeId,email,password}=userSchema.parse(body);
 
         //check existing user by email
         const existingUserByEmail = await db.user.findUnique({
@@ -46,6 +47,7 @@ export async function POST(req:Request){
         const newUser=await db.user.create({
             data:{
                 name: username,
+                employeeId: employeeId,
                 email: email,
                 password: hashedPassword 
             }
