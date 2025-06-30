@@ -191,11 +191,11 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
   };
 
   return (
-    <div className="min-h-fit bg-white mt-16 rounded-lg min-w-full">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-fit bg-white rounded-lg min-w-full ">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content */}
-          <main className="flex-1 max-w-7xl">
+          <main className="flex-1 max-w-full">
             {/* Refresh indicator */}
             {isRefreshing && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
@@ -207,7 +207,7 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
             )}
 
             {/* Posts List */}
-            <div className="space-y-8">
+            <div className="space-y-8 md:grid md:grid-cols-2 md:gap-10">
               {filteredPosts.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500">
@@ -263,7 +263,8 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
                             </div>
                           </div>
 
-                          {/* Category */}
+                          <span className='flex gap-4'>
+                            {/* Category */}
                           {post.category && (
                             <div className="flex items-center space-x-2">
                               <Tag className="w-4 h-4 text-blue-500" />
@@ -272,6 +273,24 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
                               </span>
                             </div>
                           )}
+                          {/* Tags */}
+                          {post.tags && post.tags.length > 0 && (
+                            <div className="flex items-center space-x-2">
+                              <Hash className="w-4 h-4 text-gray-400" />
+                              <div className="flex flex-wrap gap-2">
+                                {post.tags.map((tag, index) => (
+                                  <button
+                                    key={index}
+                                    disabled
+                                    className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200 transition-colors cursor-pointer capitalize"
+                                  >
+                                    {tag}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          </span>
 
                           {/* Title */}
                           <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
@@ -301,23 +320,7 @@ const HomeBlogList: React.FC<BlogPageProps> = ({
                               </span>
                             </div>
                               
-                              {/* Tags */}
-                          {post.tags && post.tags.length > 0 && (
-                            <div className="flex items-center space-x-2">
-                              <Hash className="w-4 h-4 text-gray-400" />
-                              <div className="flex flex-wrap gap-2">
-                                {post.tags.map((tag, index) => (
-                                  <button
-                                    key={index}
-                                    disabled
-                                    className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200 transition-colors cursor-pointer capitalize"
-                                  >
-                                    {tag}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                              
 
                             {/* Read more link */}
                             <a 

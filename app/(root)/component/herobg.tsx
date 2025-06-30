@@ -39,7 +39,7 @@ export function BackgroundBeamsWithCollisionDemo({categories}:{categories: Categ
   };
   return (
     <BackgroundBeamsWithCollision>
-       <div className="relative z-20 flex flex-col items-center justify-start px-4">
+       <div className="relative z-20 flex flex-col items-center justify-start px-4 py-10">
         {/* Main Heading */}
         
 

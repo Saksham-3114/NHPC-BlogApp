@@ -53,7 +53,7 @@ export default async function Home() {
   return (
     <>
     <BackgroundBeamsWithCollisionDemo categories={categories}/>
-    <div className="max-w-7xl relative mx-auto py-10 px-4 w-full  left-0 top-10">
+    <div className="max-w-7xl relative mx-auto py-10 px-4 w-full  left-0 ">
       <h1 className="text-2xl md:text-7xl font-bold text-blue-900">
         Recent Blogs <br />
       </h1>

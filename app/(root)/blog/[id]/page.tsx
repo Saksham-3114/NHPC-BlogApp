@@ -69,7 +69,7 @@ export default async function Blog({ params }: { params: Promise<{ id: string }>
           {/* Breadcrumb/Date */}
           <div className="mb-6">
             <div className="text-sm text-gray-500 mb-2">
-              Published on {formattedDate}
+              Created on {formattedDate}
             </div>
           </div>
 
