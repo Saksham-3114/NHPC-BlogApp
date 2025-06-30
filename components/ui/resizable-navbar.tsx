@@ -235,6 +235,7 @@ import Link from "next/link";
 
 export const NavbarLogo = () => {
   return (
+    <>
     <Link
       href="/"
       className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
@@ -245,8 +246,9 @@ export const NavbarLogo = () => {
         width={50}
         height={50}
       />
-      {/* <span className="font-medium text-black dark:text-white">NHPC Ltd.</span> */}
+      <span className="font-bold text-blue-950 dark:text-white">NHPC Ltd. Blog</span>
     </Link>
+    </>
   );
 };
 

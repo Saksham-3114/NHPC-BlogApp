@@ -269,7 +269,8 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
                           </div>
                         </div>
 
-                        {/* Category */} 
+                        <span className='flex justify-self-auto gap-5'>
+                          {/* Category */} 
                         {post.category && (
                           <div className="flex items-center space-x-2">
                             <Tag className="w-4 h-4 text-blue-500" />
@@ -281,6 +282,24 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
                             </button>
                           </div>
                         )}
+
+                        {/* Tags */}
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="flex items-center space-x-2">
+                            <Hash className="w-4 h-4 text-gray-400" />
+                            <div className="flex flex-wrap gap-2">
+                              {post.tags.map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md capitalize"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        </span>
 
                         {/* Title */}
                         <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
@@ -311,22 +330,7 @@ const BlogPage: React.FC<BlogPageProps> = ({ posts: initialPosts = [] }) => {
                             </span>
                           </div>
 
-                          {/* Tags */}
-                        {post.tags && post.tags.length > 0 && (
-                          <div className="flex items-center space-x-2">
-                            <Hash className="w-4 h-4 text-gray-400" />
-                            <div className="flex flex-wrap gap-2">
-                              {post.tags.map((tag, index) => (
-                                <span
-                                  key={index}
-                                  className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md capitalize"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                          
                           
                           {/* Read more link */}
                           <a 

@@ -39,20 +39,9 @@ export function BackgroundBeamsWithCollisionDemo({categories}:{categories: Categ
   };
   return (
     <BackgroundBeamsWithCollision>
-       <div className="relative z-20 flex flex-col items-center justify-center min-h-screen px-4 py-16">
+       <div className="relative z-20 flex flex-col items-center justify-start px-4">
         {/* Main Heading */}
-        <h2 className="text-3xl relative z-20 md:text-5xl lg:text-7xl font-bold text-center text-black dark:text-white font-sans tracking-tight mb-8">
-          <div className="relative mx-auto inline-block w-max [filter:drop-shadow(0px_2px_4px_rgba(0,_100,_150,_0.15))]">
-            {/* Shadow text for depth effect */}
-            <div className="absolute left-0 top-[2px] bg-clip-text bg-no-repeat text-transparent bg-gradient-to-r py-4 from-blue-900 via-blue-800 to-blue-700 [text-shadow:0_0_rgba(0,0,0,0.1)]">
-              <span>NHPC Ltd. Blog</span>
-            </div>
-            {/* Main gradient text */}
-            <div className="relative bg-clip-text text-transparent bg-no-repeat bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 py-4">
-              <span>NHPC Ltd. Blog</span>
-            </div>
-          </div>
-        </h2>
+        
 
         {/* Subtitle */}
         <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed text-center">
