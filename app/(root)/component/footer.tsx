@@ -73,7 +73,11 @@ export default function Footer() {
 			</div>
 		</div>
 	</div>
-	<div className="py-6 text-sm text-center dark:text-gray-600">Copyright © 2025 NHPC Limited, All Rights Reserved.</div>
+	<div className="py-6 text-sm text-center dark:text-gray-600 flex justify-between">
+		{/* <p></p> */}
+		<p>Copyright © 2025 NHPC Limited, All Rights Reserved.</p>
+		<p>Made with ❤️ by <strong>Saksham Singhal</strong></p>
+	</div>
 </footer>
     );
 }
