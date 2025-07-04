@@ -13,7 +13,6 @@
 - **Features for SEO**:
   - Dynamic meta tags for each blog post and page
   - Clean, crawlable URLs
-  - Sitemap and robots.txt support
   - Optimized images and lazy loading
 
 ---
