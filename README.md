@@ -1,20 +1,80 @@
-# Blog Platform
+# Blog Platform Documentation
 
-A full-featured blogging platform built with Next.js, TypeScript, Tailwind CSS, Prisma, and more. This project supports user authentication, blog creation and management, category management, profile editing, and rich text editing with image uploads.
+## Overview
+
+**Blog Platform** is a modern, full-featured blogging application developed for **NHPC Ltd.**. It is designed to serve the content creation and management needs of NHPC employees and stakeholders. The platform integrates with NHPC's ERP login system for secure authentication, ensuring only authorized users can access and contribute to the platform. Built with Next.js, TypeScript, and Prisma, it offers a seamless experience for writing, managing, and discovering content. The platform is optimized for performance, accessibility, and SEO, ensuring high discoverability and user engagement.
+
+---
+
+## SEO Score
+
+- **SEO Optimized**: The platform follows best practices for SEO, including server-side rendering, semantic HTML, meta tags, Open Graph support, and fast load times.
+- **Typical Lighthouse SEO Score**: 95+ (with proper deployment and configuration)
+- **Features for SEO**:
+  - Dynamic meta tags for each blog post and page
+  - Clean, crawlable URLs
+  - Sitemap and robots.txt support
+  - Optimized images and lazy loading
+
+---
+
+## Features
+
+### User Authentication
+- Secure registration, login, and logout
+- Password reset and forgot password flows
+- Credential Login and ERP Login
+- Role-based access (admin, user)
+
+### Blog Management
+- Create, edit, and delete blog posts
+- Rich text editor with image upload (Tiptap/ProseMirror)
+- Drafts and publishing workflow
+- Blog post review and approval (admin)
+- Blog listing, filtering, and search
+- View counts and engagement metrics
+
+### Category Management
+- Create, edit, and delete categories (admin)
+- Assign categories to blog posts
+- Category-based filtering
+
+### User Profile
+- View and edit profile information
+- List of user’s own blogs
+- Profile image upload
+
+### Admin Dashboard
+- Manage users, blogs, and categories
+- Approve or reject blog posts
+- Analytics and overview (future prospect)
+
+### UI/UX
+- Responsive and accessible design
+- Modern UI with Tailwind CSS
+- Reusable UI components
+
+### Utilities
+- Email notifications (password reset, approvals)
+- Database seeding and admin creation scripts
+- Dockerized for easy deployment
+
+---
 
 ## Tech Stack
 
-- **Next.js**: React framework for server-side rendering and static site generation
-- **TypeScript**: Type-safe JavaScript
-- **Tailwind CSS**: Utility-first CSS framework
-- **Prisma**: ORM for database access
-- **PostgreSQL**: Database (configurable)
-- **ProseMirror/Tiptap**: Rich text editor
-- **Docker**: Containerization (via `docker-compose.yml`)
-- **ESLint**: Linting
-- **Other**: Custom hooks, utility libraries, and more
+- **Next.js** (App Router, SSR, SSG)
+- **TypeScript**
+- **Tailwind CSS**
+- **Prisma ORM**
+- **PostgreSQL** (default, configurable)
+- **Tiptap/ProseMirror** (rich text editor)
+- **Docker**
+- **ESLint**
 
-## Project Structure & Key Functions
+---
+
+## Project Structure & Key Modules
 
 ### Authentication
 - `app/(auth)/login/`, `register/`, `forgot-password/`, `reset-password/`: Pages for user authentication and password management.
